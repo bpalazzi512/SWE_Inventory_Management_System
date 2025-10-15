@@ -17,8 +17,8 @@ export default function Sidebar() {
                     <Image
                         src={"/images/restockedlogobottom.png"}
                         alt="Profile"
-                        width={100}
-                        height={100}
+                        width={800}
+                        height={600}
                         className="w-full h-auto"
                     />
 
