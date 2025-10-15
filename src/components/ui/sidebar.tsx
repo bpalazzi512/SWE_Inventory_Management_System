@@ -1,53 +1,65 @@
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import Image from "next/image"
-import { SeparatorHorizontal } from "lucide-react";
+import { LogOutIcon, SeparatorHorizontal, Settings } from "lucide-react";
 import { Separator } from "./separator";
 
 export default function Sidebar() {
 
-    const linkStyle = "text-xl font-medium text-brand-primary transition-colors"
+    const linkStyle = "text-xl font-medium text-brand-primary transition-colors py-4"
 
     return (
         <div className="fixed left-6 top-6 bottom-6 w-56 bg-white rounded-xl shadow-lg p-6">
 
-            <Image
-                src={"/images/restockedlogobottom.png"}
-                alt="Profile"
-                width={100}
-                height={100}
-                className="w-full h-auto"
-            />
+            <div className="flex flex-col justify-between h-full">
+                <div className="flex flex-col items-left">
 
-            <Separator className="my-6"/>
+                    <Image
+                        src={"/images/restockedlogobottom.png"}
+                        alt="Profile"
+                        width={100}
+                        height={100}
+                        className="w-full h-auto"
+                    />
 
-            <div className="flex flex-col items-left space-y-8">
+                    <Separator className="mt-6 mb-2" />
 
-                <Link
-                    href="/dashboard"
-                    className={linkStyle}
-                >
-                    Dashboard
-                </Link>
+                    <Link
+                        href="/dashboard"
+                        className={linkStyle}
+                    >
+                        Dashboard
+                    </Link>
 
-                <Link
-                    href="/inventory"
-                    className={linkStyle}
-                >
-                    Inventory
-                </Link>
-                <Link
-                    href="/products"
-                    className={linkStyle}
-                >
-                    Products
-                </Link>
-                <Link
-                    href="/transactions"
-                    className={linkStyle}
-                >
-                    Transactions
-                </Link>
+                    <Link
+                        href="/inventory"
+                        className={linkStyle}
+                    >
+                        Inventory
+                    </Link>
+                    <Link
+                        href="/products"
+                        className={linkStyle}
+                    >
+                        Products
+                    </Link>
+                    <Link
+                        href="/transactions"
+                        className={linkStyle}
+                    >
+                        Transactions
+                    </Link>
+                </div>
+
+
+                <div className="flex flex-col space-y-2 text-xl font-medium text-brand-primary">
+                    <Settings />
+                    <div className="flex flex-row gap-2 items-center">
+                        Log Out
+                        <LogOutIcon />
+                    </div>
+                </div>
+
             </div>
         </div>
     );
