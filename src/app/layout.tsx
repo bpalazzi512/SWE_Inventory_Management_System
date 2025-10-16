@@ -28,8 +28,8 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-          <Sidebar/>
+        <Sidebar/>
+        <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start ml-[224px]"> 
           {children}
         </main>
       </body>

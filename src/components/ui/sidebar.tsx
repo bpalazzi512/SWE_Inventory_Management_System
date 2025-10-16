@@ -9,7 +9,7 @@ export default function Sidebar() {
     const linkStyle = "text-xl font-medium text-brand-primary transition-colors py-4"
 
     return (
-        <div className="fixed left-6 top-6 bottom-6 w-56 bg-white rounded-xl shadow-lg p-6">
+        <div className="fixed left-6 top-6 bottom-6 w-[200px] bg-white rounded-xl shadow-lg p-6">
 
             <div className="flex flex-col justify-between h-full">
                 <div className="flex flex-col items-left">
@@ -53,7 +53,12 @@ export default function Sidebar() {
 
 
                 <div className="flex flex-col space-y-2 text-xl font-medium text-brand-primary">
-                    <Settings />
+                    <Link
+                        href="/settings"
+                        className={`text-xl font-medium text-brand-primary transition-colors py-0`}
+                        >
+                        <Settings />
+                    </Link>
                     <div className="flex flex-row gap-2 items-center">
                         Log Out
                         <LogOutIcon />
