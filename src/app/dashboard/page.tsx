@@ -7,6 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Info, TriangleAlert } from "lucide-react";
 
 type ProductInfo = {
   totalSkus: number;
@@ -66,7 +67,7 @@ export default function Dashboard() {
         {/* Product Info */}
         <Card className="flex flex-col justify-start">
           <CardHeader>
-            <CardTitle>Product Info</CardTitle>
+            <CardTitle className="flex flex-row items-center gap-2">Product Info <Info/></CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
             <p>Total SKUs: <span className="font-medium">{productInfo.totalSkus}</span></p>
@@ -76,9 +77,9 @@ export default function Dashboard() {
         </Card>
 
         {/* Low Stock Alerts */}
-        <Card className="flex flex-col justify-between">
+        <Card className="flex flex-col justify-start">
           <CardHeader>
-            <CardTitle>Low Stock Alerts</CardTitle>
+            <CardTitle className="flex flex-row items-center gap-2">Low Stock Alerts <TriangleAlert/> </CardTitle>
           </CardHeader>
           <CardContent>
             <ul className="space-y-2 text-sm">
@@ -88,6 +89,7 @@ export default function Dashboard() {
                   className="flex justify-between border-b pb-1 last:border-none"
                 >
                   <span>{item.name}</span>
+                  <span>{item.sku}</span>
                   <span className="text-muted-foreground">Qty: {item.quantity}</span>
                 </li>
               ))}
@@ -96,7 +98,7 @@ export default function Dashboard() {
         </Card>
 
         {/* Recent Transactions */}
-        <Card className="flex flex-col justify-between">
+        <Card className="flex flex-col justify-start">
           <CardHeader>
             <CardTitle>Recent Transactions</CardTitle>
           </CardHeader>
@@ -124,7 +126,7 @@ export default function Dashboard() {
         </Card>
 
         {/* Quick Actions */}
-        <Card className="flex flex-col justify-between">
+        <Card className="flex flex-col justify-start">
           <CardHeader>
             <CardTitle>Quick Actions</CardTitle>
           </CardHeader>
