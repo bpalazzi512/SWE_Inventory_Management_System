@@ -45,8 +45,12 @@ const mockInventories: Inventory[] = [
     },
 ];
 
-export default function Inventory() {
+//Eventually will need to turn this page async so we can fetch inventory data
+//Plan: create a table + search bar component that we pass the inventory objects to
+//Use pagination, when searching maybe pass up search term so we can search server-side
+//instead of getting all inventory objects and filtering
 
+export default function Inventory() {
 
     const [searchTerm, setSearchTerm] = useState("");
     const [sortKey, setSortKey] = useState<keyof Inventory>("name");
@@ -89,7 +93,7 @@ export default function Inventory() {
     return (
         <div className="min-h-screen w-full bg-gray-50 p-8 flex flex-col items-center">
             <div className="w-full max-w-6xl space-y-6">
-                <h1 className="text-2xl font-bold text-gray-800">Inventories</h1>
+                <h1 className="text-3xl font-semibold mb-6">Inventory</h1>
 
                 {/* Search Input */}
                 <div className="flex items-center">
