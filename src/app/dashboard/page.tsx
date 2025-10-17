@@ -8,30 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Info, TriangleAlert } from "lucide-react";
-
-type ProductInfo = {
-  totalSkus: number;
-  totalInventory: number;
-  lowStockSkus: number;
-};
-
-type Stock = {
-  sku: string;
-  name: string;
-  quantity: number;
-};
-
-type Transaction = {
-  date: string;
-  sku: string;
-  type: "IN" | "OUT";
-  quantity: number;
-};
-
-type QuickAction = {
-  name: string;
-  href: string;
-};
+import type {ProductInfo, Inventory, Transaction, QuickAction } from "@/types"
 
 const productInfo: ProductInfo = {
   totalSkus: 244,
@@ -39,7 +16,7 @@ const productInfo: ProductInfo = {
   lowStockSkus: 24,
 };
 
-const lowStock: Stock[] = [
+const lowStock: Inventory[] = [
   { sku: "SKU123", name: "Blue T-Shirt", quantity: 3 },
   { sku: "SKU456", name: "Red Hoodie", quantity: 5 },
   { sku: "SKU789", name: "Black Jeans", quantity: 2 },
