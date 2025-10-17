@@ -24,6 +24,7 @@ type Transaction = {
   date: string;
   sku: string;
   type: "IN" | "OUT";
+  quantity: number;
 };
 
 type QuickAction = {
@@ -44,9 +45,9 @@ const lowStock: Stock[] = [
 ];
 
 const recentTransactions: Transaction[] = [
-  { date: "2025-10-12", sku: "SKU123", type: "IN" },
-  { date: "2025-10-13", sku: "SKU456", type: "OUT" },
-  { date: "2025-10-14", sku: "SKU789", type: "IN" },
+  { date: "2025-10-12", sku: "SKU123", type: "IN", quantity: 300 },
+  { date: "2025-10-13", sku: "SKU456", type: "OUT", quantity: 600 },
+  { date: "2025-10-14", sku: "SKU789", type: "IN", quantity: 2000 },
 ];
 
 const quickActions: QuickAction[] = [
@@ -63,7 +64,7 @@ export default function Dashboard() {
 
       <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-2 auto-rows-[1fr]">
         {/* Product Info */}
-        <Card className="flex flex-col justify-between">
+        <Card className="flex flex-col justify-start">
           <CardHeader>
             <CardTitle>Product Info</CardTitle>
           </CardHeader>
@@ -108,6 +109,7 @@ export default function Dashboard() {
                 >
                   <span>{t.date}</span>
                   <span>{t.sku}</span>
+                  <span>{t.quantity}</span>
                   <span
                     className={`${
                       t.type === "IN" ? "text-green-600" : "text-red-600"
