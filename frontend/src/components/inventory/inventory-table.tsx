@@ -120,7 +120,7 @@ export function InventoryTable({ inventories }: { inventories: Inventory[] }) {
                                 <TableCell>{t.category}</TableCell>
                                 <TableCell className="text-center">{t.quantity}</TableCell>
                                 <TableCell className="text-right pr-6">
-                                    ${t.unitPrice.toFixed(2)}
+                                    ${t.unitPrice?.toFixed(2)}
                                 </TableCell>
                             </TableRow>
                         ))}
