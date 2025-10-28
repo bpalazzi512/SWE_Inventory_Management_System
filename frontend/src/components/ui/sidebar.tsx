@@ -12,6 +12,10 @@ export default function Sidebar() {
 
     const pathname = usePathname();
 
+    if (pathname == "/login") {
+        return null;
+    }
+
     const linkStyle = `text-xl font-medium text-brand-primary transition-colors py-4`
 
     return (
