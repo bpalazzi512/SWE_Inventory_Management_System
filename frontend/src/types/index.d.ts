@@ -5,8 +5,16 @@ export type Inventory = {
     category?: string;
     quantity: number;
     unitPrice?: number;
-    description?: string;
+    description: string;
 };
+
+export type Product = {
+  name: string;
+  sku: string;
+  description: string;
+  category: string;
+  unitPrice: number;
+}
 
 export type ProductInfo = {
   totalSkus: number;
