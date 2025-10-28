@@ -5,9 +5,15 @@ import { useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { ArrowUpDown } from "lucide-react";
+import CreateProductModal from "@/app/products/create-product-modal";
 
+interface ProductTableProps {
+    products: Product[];
+    categories: string[];
+    locations: string[];
+}
 
-export function ProductsTable({ products }: { products: Product[] }) {
+export function ProductsTable({ products, categories, locations }: ProductTableProps) {
 
     const [searchTerm, setSearchTerm] = useState("");
     const [sortKey, setSortKey] = useState<keyof Product>("name");
@@ -50,7 +56,7 @@ export function ProductsTable({ products }: { products: Product[] }) {
 
         <div className="flex flex-col gap-4">
             {/* Search Input */}
-            <div className="flex items-center">
+            <div className="flex items-center justify-between">
                 <Input
                     type="text"
                     placeholder="Search by name or SKU..."
@@ -58,6 +64,8 @@ export function ProductsTable({ products }: { products: Product[] }) {
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
+
+                <CreateProductModal categories={categories} locations={locations} />
             </div>
 
             {/* Table */}

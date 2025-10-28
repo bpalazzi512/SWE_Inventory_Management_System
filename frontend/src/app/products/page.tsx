@@ -1,6 +1,6 @@
 import type { Product } from "@/types";
 import { ProductsTable } from "@/components/products/products-table";
-import { Button } from "@/components/ui/button";
+import CreateProductModal from "./create-product-modal";
 
 const mockProducts: Product[] = [
     {
@@ -110,6 +110,21 @@ const mockProducts: Product[] = [
     },
 ];
 
+const mockCategories: string[] = [
+    "Routers",
+    "Switches",
+    "Access Points",
+    "Transcievers",
+    "Cables",
+    "Accessories",
+    "Power Supplies",
+    "Tools",
+]
+
+const mockLocations: string[] = [
+    "BOS",
+    "SEA",
+]
 
 export default async function Inventory() {
 
@@ -117,8 +132,10 @@ export default async function Inventory() {
         <div className="min-h-screen w-full bg-gray-50 p-8 flex flex-col items-center">
             <div className="w-full max-w-6xl space-y-6">
                 <h1 className="text-3xl font-semibold mb-6">Products</h1>
-                <Button>Add Product</Button>
-                <ProductsTable products={mockProducts} />
+                <ProductsTable 
+                    products={mockProducts} 
+                    categories={mockCategories}
+                    locations={mockLocations}/>
             </div>
         </div>
     )
