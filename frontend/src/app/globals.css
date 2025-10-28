@@ -49,6 +49,7 @@
   --color-text-secondary: var(--text-secondary);
   --color-brand-primary: var(--brand-primary);
   --color-brand-secondary: var(--brand-secondary);
+  --color-brand-primary-dark: var(--brand-primary-dark);
 }
 
 :root {
@@ -90,6 +91,7 @@
   --text-primary: #112D4E;
   --text-secondary: #6B7280;
   --brand-primary: #3F72AF;
+  --brand-primary-dark: #235189;
   --brand-secondary: #7C3AED;
 }
 

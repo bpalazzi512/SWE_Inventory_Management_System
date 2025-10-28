@@ -1,5 +1,6 @@
 import type { Product } from "@/types";
 import { ProductsTable } from "@/components/products/products-table";
+import { Button } from "@/components/ui/button";
 
 const mockProducts: Product[] = [
     {
@@ -116,9 +117,8 @@ export default async function Inventory() {
         <div className="min-h-screen w-full bg-gray-50 p-8 flex flex-col items-center">
             <div className="w-full max-w-6xl space-y-6">
                 <h1 className="text-3xl font-semibold mb-6">Products</h1>
-
+                <Button>Add Product</Button>
                 <ProductsTable products={mockProducts} />
-
             </div>
         </div>
     )
