@@ -1,9 +1,11 @@
 export type Inventory = {
     name: string;
     sku: string;
+    lowStockThreshold: number;
     category?: string;
     quantity: number;
     unitPrice?: number;
+    description?: string;
 };
 
 export type ProductInfo = {
