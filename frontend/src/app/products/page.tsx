@@ -1,6 +1,6 @@
 import type { Product } from "@/types";
 import { ProductsTable } from "@/components/products/products-table";
-import CreateProductModal from "./create-product-modal";
+import CreateProductModal from "../../components/products/create-product-modal";
 
 const mockProducts: Product[] = [
     {

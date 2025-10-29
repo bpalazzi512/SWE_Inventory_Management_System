@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { ArrowUpDown } from "lucide-react";
-import CreateProductModal from "@/app/products/create-product-modal";
+import CreateProductModal from "@/components/products/create-product-modal";
 
 interface ProductTableProps {
     products: Product[];
