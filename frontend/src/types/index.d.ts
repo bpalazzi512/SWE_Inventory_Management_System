@@ -16,17 +16,23 @@ export type Product = {
   unitPrice: number;
 }
 
+export type Transaction = {
+  date: string;
+  tid: string;
+  items: TransactionItem[];
+};
+
+export type TransactionItem = {
+  sku: string;
+  type: "IN" | "OUT";
+  quantity: number;
+  description: string;
+}
+
 export type ProductInfo = {
   totalSkus: number;
   totalInventory: number;
   lowStockSkus: number;
-};
-
-export type Transaction = {
-  date: string;
-  sku: string;
-  type: "IN" | "OUT";
-  quantity: number;
 };
 
 export type QuickAction = {
