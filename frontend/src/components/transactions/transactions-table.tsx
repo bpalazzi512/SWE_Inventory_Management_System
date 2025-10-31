@@ -15,9 +15,57 @@ interface TransactionTableProps {
 
 export function TransactionsTable({ transactions }: TransactionTableProps) {
 
+    const [searchTerm, setSearchTerm] = useState("");
+    const [sortKey, setSortKey] = useState<keyof Transaction>("date");
+    const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+
+    //Filter Transactions based on search
+    const filteredTransactions = useMemo(() => {
+        return transactions.filter((t) =>
+            [t.date.toLowerCase(), t.tid.toLowerCase()].some((value) =>
+                value.includes(searchTerm.toLowerCase())
+            )
+        );
+    }, [searchTerm]);
+
+    //Sort Transactions
+    const sortedTransactions = useMemo(() => {
+        return [...filteredTransactions].sort((a, b) => {
+            const valA = a[sortKey];
+            const valB = b[sortKey];
+            if (typeof valA === "number" && typeof valB === "number") {
+                return sortOrder === "desc" ? valA - valB : valB - valA;
+            } else {
+                return sortOrder === "desc"
+                    ? String(valA).localeCompare(String(valB))
+                    : String(valB).localeCompare(String(valA));
+            }
+        });
+    }, [filteredTransactions, sortKey, sortOrder]);
+
+    const toggleSort = (key: keyof Transaction) => {
+        if (key === sortKey) {
+            setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+        } else {
+            setSortKey(key);
+            setSortOrder("asc");
+        }
+    };
+
     return (
 
         <div className="flex flex-col gap-4">
+
+            {/* Search Input */}
+                        <div className="flex items-center justify-between">
+                            <Input
+                                type="text"
+                                placeholder="Search by TID or date..."
+                                className="w-full max-w-md border-gray-300"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </div>
 
             {/* Table */}
             <div className="bg-white shadow rounded-2xl overflow-hidden">
@@ -26,6 +74,7 @@ export function TransactionsTable({ transactions }: TransactionTableProps) {
                         <TableRow className="bg-brand-primary">
                             <TableHead
                                 className="cursor-pointer pl-4"
+                                onClick={() => toggleSort("tid")}
                             >
                                 <div className="flex items-center gap-1">
                                     TID
@@ -34,6 +83,7 @@ export function TransactionsTable({ transactions }: TransactionTableProps) {
                             </TableHead>
                             <TableHead
                                 className="cursor-pointer pl-4"
+                                onClick={() => toggleSort("date")}
                             >
                                 <div className="flex items-center gap-1">
                                     Date
@@ -41,42 +91,38 @@ export function TransactionsTable({ transactions }: TransactionTableProps) {
                                 </div>
                             </TableHead>
                             <TableHead
-                                className="cursor-pointer pl-4"
+                                className="pl-4"
                             >
                                 <div className="flex items-center gap-1">
                                     Type
-                                    <ArrowUpDown size={14} />
                                 </div>
                             </TableHead>
                             <TableHead
-                                className="cursor-pointer pl-4"
+                                className="pl-4"
                             >
                                 <div className="flex items-center gap-1">
                                     Quantity
-                                    <ArrowUpDown size={14} />
                                 </div>
                             </TableHead>
                             <TableHead
-                                className="cursor-pointer pl-4"
+                                className="pl-4"
                             >
                                 <div className="flex items-center gap-1">
                                     SKU
-                                    <ArrowUpDown size={14} />
                                 </div>
                             </TableHead>
-                            
+
                             <TableHead
-                                className="cursor-pointer pl-4"
+                                className="pl-4"
                             >
                                 <div className="flex items-center gap-1">
                                     Description
-                                    <ArrowUpDown size={14} />
                                 </div>
                             </TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {transactions.map((t) => (
+                        {sortedTransactions.map((t) => (
                             <TableRow key={t.tid}>
                                 <TableCell className="align-top">{t.tid}</TableCell>
                                 <TableCell className="align-top">{t.date}</TableCell>
@@ -104,8 +150,6 @@ export function TransactionsTable({ transactions }: TransactionTableProps) {
                                     </div>
                                 </TableCell>
 
-
-
                                 <TableCell className="align-top">
                                     <div className="flex flex-col gap-1">
                                         {t.items.map((item, idx) => (
@@ -119,7 +163,7 @@ export function TransactionsTable({ transactions }: TransactionTableProps) {
 
 
                 </Table>
-                {transactions.length === 0 && (
+                {sortedTransactions.length === 0 && (
                     <div className="p-6 text-center text-gray-500">
                         No results found.
                     </div>
