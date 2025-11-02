@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Info, TriangleAlert } from "lucide-react";
 import type {ProductInfo, Inventory, Transaction, QuickAction } from "@/types"
+import SiteSurveyModal from "@/components/dashboard/site-survey-modal";
 
 const productInfo: ProductInfo = {
   totalSkus: 244,
@@ -31,7 +32,6 @@ const recentTransactions: Transaction[] = [
 const quickActions: QuickAction[] = [
   { name: "Add User", href: "/users/add" },
   { name: "Record Stock In/Out", href: "/transactions/new" },
-  { name: "Site Survey", href: "/survey" },
 ];
 
 
@@ -108,7 +108,7 @@ export default function Dashboard() {
             <CardTitle>Quick Actions</CardTitle>
           </CardHeader>
           <CardContent>
-            <ul className="space-y-3 text-sm">
+            <ul className="space-y-3 text-sm text-left">
               {quickActions.map((action) => (
                 <li key={action.name}>
                   <Link
@@ -119,6 +119,7 @@ export default function Dashboard() {
                   </Link>
                 </li>
               ))}
+              <SiteSurveyModal/>
             </ul>
           </CardContent>
         </Card>
