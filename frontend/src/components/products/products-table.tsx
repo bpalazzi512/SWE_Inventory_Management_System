@@ -5,15 +5,19 @@ import { useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { ArrowUpDown } from "lucide-react";
-import CreateProductModal from "@/components/products/create-product-modal";
+import CreateProductModal, { CategoryOption } from "@/components/products/create-product-modal";
+import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 interface ProductTableProps {
     products: Product[];
-    categories: string[];
-    locations: string[];
+    categories: CategoryOption[];
+    locations: string[]; // Expect full names e.g., Boston | Seattle | Oakland
 }
 
 export function ProductsTable({ products, categories, locations }: ProductTableProps) {
+    const router = useRouter();
+    const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000/api";
 
     const [searchTerm, setSearchTerm] = useState("");
     const [sortKey, setSortKey] = useState<keyof Product>("name");
@@ -49,6 +53,25 @@ export function ProductsTable({ products, categories, locations }: ProductTableP
         } else {
             setSortKey(key);
             setSortOrder("asc");
+        }
+    };
+
+    const handleDelete = async (p: Product) => {
+        if (!p.id) {
+            alert("Missing product id; cannot delete.");
+            return;
+        }
+        const confirm = window.confirm(`Delete product ${p.name} (${p.sku})? This cannot be undone.`);
+        if (!confirm) return;
+        try {
+            const res = await fetch(`${apiBase}/products/${p.id}`, { method: "DELETE" });
+            if (!res.ok) {
+                const data = await res.json().catch(() => ({}));
+                throw new Error(data?.error || `Failed to delete (${res.status})`);
+            }
+            router.refresh();
+        } catch (e: any) {
+            alert(e?.message || "Failed to delete product");
         }
     };
 
@@ -109,6 +132,9 @@ export function ProductsTable({ products, categories, locations }: ProductTableP
                                     <ArrowUpDown size={14} />
                                 </div>
                             </TableHead>
+                            <TableHead className="text-right pr-6">
+                                Actions
+                            </TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -119,6 +145,9 @@ export function ProductsTable({ products, categories, locations }: ProductTableP
                                 <TableCell>{t.category}</TableCell>
                                 <TableCell className="text-center">
                                     ${t.unitPrice?.toFixed(2)}
+                                </TableCell>
+                                <TableCell className="text-right pr-6">
+                                    <Button variant="destructive" onClick={() => handleDelete(t)}>Delete</Button>
                                 </TableCell>
                             </TableRow>
                         ))}

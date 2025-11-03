@@ -24,32 +24,28 @@ export interface UpdateProductDto {
 }
 
 export class ProductService {
-  // Generate a unique SKU
-  private async generateUniqueSKU(locationCode: string): Promise<string> {
-    let sku: string;
-    let isUnique = false;
-    let attempts = 0;
-    const maxAttempts = 100;
+  // Generate the next sequential SKU per location prefix in the format PREFIX + 5 digits (e.g., SEA00001)
+  private async generateSequentialSKU(locationCode: string): Promise<string> {
+    const prefix = locationCode;
+    // Find the max existing SKU for this prefix (lexicographical works because of zero-padding)
+    const latest = await Product
+      .findOne({ sku: { $regex: `^${prefix}\\d{5}$` } })
+      .sort({ sku: -1 })
+      .lean();
 
-    while (!isUnique && attempts < maxAttempts) {
-      // Generate 9 random numbers
-      const randomNumbers = Math.floor(100000000 + Math.random() * 900000000).toString();
-      sku = `${locationCode}${randomNumbers}`;
-
-      // Check if SKU already exists
-      const existingProduct = await Product.findOne({ sku });
-      if (!existingProduct) {
-        isUnique = true;
-      } else {
-        attempts++;
-      }
+    let nextNumber = 1;
+    if (latest?.sku) {
+      const tail = latest.sku.slice(prefix.length); // last 5 digits
+      const current = parseInt(tail, 10);
+      if (Number.isFinite(current)) nextNumber = current + 1;
     }
 
-    if (!isUnique) {
-      throw new Error('Failed to generate unique SKU after multiple attempts');
+    if (nextNumber > 99999) {
+      throw new Error('SKU sequence overflow for this location');
     }
 
-    return sku!;
+    const padded = String(nextNumber).padStart(5, '0');
+    return `${prefix}${padded}`;
   }
 
   // Create a new product
@@ -66,8 +62,18 @@ export class ProductService {
       throw new Error('Invalid location. Must be Boston, Seattle, or Oakland');
     }
 
-    // Generate unique SKU
-    const sku = await this.generateUniqueSKU(locationCode);
+    // Generate sequential SKU like SEA00001
+    let sku = await this.generateSequentialSKU(locationCode);
+
+    // Rare race condition handling: retry a few times if unique constraint collides
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const existing = await Product.findOne({ sku });
+      if (!existing) break;
+      // if exists, advance by one
+      const num = parseInt(sku.slice(locationCode.length), 10) + 1;
+      if (num > 99999) throw new Error('SKU sequence overflow for this location');
+      sku = `${locationCode}${String(num).padStart(5, '0')}`;
+    }
 
     const product = new Product({
       name: productData.name,

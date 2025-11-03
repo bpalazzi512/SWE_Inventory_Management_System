@@ -1,144 +1,77 @@
 import type { Product } from "@/types";
 import { ProductsTable } from "@/components/products/products-table";
-import CreateProductModal from "../../components/products/create-product-modal";
+import type { CategoryOption } from "@/components/products/create-product-modal";
 
-const mockProducts: Product[] = [
-    {
-        name: "NetLink Router R3000",
-        sku: "SEA000001",
-        description: "Dual-band WiFi 6 router with 4 LAN ports",
-        category: "Routers",
-        unitPrice: 129.99,
-    },
-    {
-        name: "NetLink Router R5000 Pro",
-        sku: "BOS000001",
-        description: "Enterprise-grade router with VPN and firewall",
-        category: "Routers",
-        unitPrice: 349.0,
-    },
-    {
-        name: "SwiftSwitch 24G",
-        sku: "SEA000003",
-        description: "24-port gigabit managed switch",
-        category: "Switches",
-        unitPrice: 219.5,
-    },
-    {
-        name: "SwiftSwitch 48G+",
-        sku: "SEA000004",
-        description: "48-port PoE+ gigabit switch with 4 SFP slots",
-        category: "Switches",
-        unitPrice: 499.0,
-    },
-    {
-        name: "AirWave AP200",
-        sku: "SEA000005",
-        description: "WiFi 6 access point with mesh support",
-        category: "Access Points",
-        unitPrice: 149.0,
-    },
-    {
-        name: "AirWave AP500 Pro",
-        sku: "SEA000006",
-        description: "WiFi 6E tri-band access point",
-        category: "Access Points",
-        unitPrice: 259.99,
-    },
-    {
-        name: "FiberPro SFP-10G",
-        sku: "SEA000007",
-        description: "10G SFP+ transceiver module",
-        category: "Transceivers",
-        unitPrice: 89.99,
-    },
-    {
-        name: "FiberPro SFP-1G",
-        sku: "SEA000008",
-        description: "1G SFP module (multimode)",
-        category: "Transceivers",
-        unitPrice: 39.99,
-    },
-    {
-        name: "PowerLink Cat6 10ft",
-        sku: "SEA000009",
-        description: "Cat6 Ethernet cable (10 ft)",
-        category: "Cables",
-        unitPrice: 7.99,
-    },
-    {
-        name: "PowerLink Cat6 50ft",
-        sku: "SEA000010",
-        description: "Cat6 Ethernet cable (50 ft)",
-        category: "Cables",
-        unitPrice: 14.99,
-    },
-    {
-        name: "PowerLink Fiber LC-LC 5m",
-        sku: "SEA000011",
-        description: "Duplex fiber patch cable (OM4, 5m)",
-        category: "Cables",
-        unitPrice: 24.99,
-    },
-    {
-        name: "NetCase 1U Rackmount Kit",
-        sku: "SEA000012",
-        description: "Mounting kit for small network devices",
-        category: "Accessories",
-        unitPrice: 29.99,
-    },
-    {
-        name: "PowerStation PSU-120W",
-        sku: "SEA000013",
-        description: "120W power supply for switches/routers",
-        category: "Power Supplies",
-        unitPrice: 49.99,
-    },
-    {
-        name: "NetGuard UPS Mini",
-        sku: "SEA000014",
-        description: "600VA UPS with 4 surge outlets",
-        category: "Power Supplies",
-        unitPrice: 99.0,
-    },
-    {
-        name: "TestLink Cable Tester CT100",
-        sku: "SEA000015",
-        description: "Network cable tester with RJ45/RJ11 support",
-        category: "Tools",
-        unitPrice: 39.0,
-    },
-];
+async function fetchProducts(): Promise<Product[]> {
+  const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000/api";
+  const res = await fetch(`${apiBase}/products`, { next: { revalidate: 0 } });
+  if (!res.ok) throw new Error(`Failed to fetch products: ${res.status}`);
+  const data = await res.json();
+  return (data as any[]).map((p) => ({
+    id: p._id,
+    name: p.name,
+    sku: p.sku,
+    description: "", // backend has no description field
+    category: p.categoryId?.name ?? "",
+    unitPrice: Number(p.price ?? 0),
+  }));
+}
 
-const mockCategories: string[] = [
+async function fetchCategories(): Promise<CategoryOption[]> {
+  const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000/api";
+  // Ensure the standard set of categories exist (matching the previous UI options)
+  const defaultNames = [
     "Routers",
     "Switches",
     "Access Points",
-    "Transcievers",
+    "Transcievers", // keep spelling as previously used in the project
     "Cables",
     "Accessories",
     "Power Supplies",
     "Tools",
-]
+  ];
 
-const mockLocations: string[] = [
-    "BOS",
-    "SEA",
-]
+  // 1) Fetch existing categories
+  let res = await fetch(`${apiBase}/categories`, { next: { revalidate: 0 } });
+  if (!res.ok) throw new Error(`Failed to fetch categories: ${res.status}`);
+  let data: any[] = await res.json();
 
-export default async function Inventory() {
+  const existingNames = new Set(data.map((c: any) => String(c.name)));
+  const missing = defaultNames.filter((n) => !existingNames.has(n));
 
-    return (
-        <div className="min-h-screen w-full bg-gray-50 p-8 flex flex-col items-center">
-            <div className="w-full max-w-6xl space-y-6">
-                <h1 className="text-3xl font-semibold mb-6">Products</h1>
-                <ProductsTable 
-                    products={mockProducts} 
-                    categories={mockCategories}
-                    locations={mockLocations}/>
-            </div>
-        </div>
-    )
+  // 2) Create missing categories (ignore conflicts if created elsewhere concurrently)
+  if (missing.length > 0) {
+    await Promise.all(
+      missing.map((name) =>
+        fetch(`${apiBase}/categories`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name }),
+        }).catch(() => undefined)
+      )
+    );
+    // 3) Re-fetch to get ids of the now-complete set
+    res = await fetch(`${apiBase}/categories`, { next: { revalidate: 0 } });
+    if (!res.ok) throw new Error(`Failed to fetch categories after seed: ${res.status}`);
+    data = await res.json();
+  }
 
+  // 4) Return mapped options
+  return (data as any[])
+    .filter((c) => defaultNames.includes(String(c.name)))
+    .map((c) => ({ id: c._id, name: c.name }));
+}
 
+export default async function ProductsPage() {
+  const [products, categories] = await Promise.all([fetchProducts(), fetchCategories()]);
+  const locations = ["Boston", "Seattle", "Oakland"];
+
+  return (
+    <div className="min-h-screen w-full bg-gray-50 p-8 flex flex-col items-center">
+      <div className="w-full max-w-6xl space-y-6">
+        <h1 className="text-3xl font-semibold mb-6">Products</h1>
+        <ProductsTable products={products} categories={categories} locations={locations} />
+      </div>
+    </div>
+  );
 }

@@ -9,6 +9,7 @@ export type Inventory = {
 };
 
 export type Product = {
+  id?: string; // backend _id for actions like delete
   name: string;
   sku: string;
   description: string;

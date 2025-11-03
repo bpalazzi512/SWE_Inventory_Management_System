@@ -4,17 +4,24 @@ import React, { useState } from "react";
 import { Modal, Box, Typography, TextField, MenuItem } from "@mui/material";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
+import { useRouter } from "next/navigation";
+
+export type CategoryOption = { id: string; name: string };
 
 interface CreateProductModalProps {
-    categories: string[];
-    locations: string[];
+  categories: CategoryOption[];
+  locations: string[]; // Expect: ["Boston", "Seattle", "Oakland"]
+  onCreated?: () => void;
 }
 
-export default function CreateProductModal({ categories, locations }: CreateProductModalProps) {
+export default function CreateProductModal({ categories, locations, onCreated }: CreateProductModalProps) {
     const [open, setOpen] = useState(false);
+    const router = useRouter();
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const [formData, setFormData] = useState({
         name: "",
-        category: "",
+        categoryId: "",
         location: "",
         unitPrice: "",
         description: "",
@@ -31,23 +38,48 @@ export default function CreateProductModal({ categories, locations }: CreateProd
     };
 
 
-    const handleSubmit = () => {
-        console.log("New product data:", formData);
+        const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000/api";
 
-        // Call some request to create the product
-        
-        // Reset form data
-        setFormData({
-            name: "",
-            location: "",
-            unitPrice: "",
-            description: "",
-            category: "",
-        })
-        handleClose();
-    };
+        const handleSubmit = async () => {
+            try {
+                setLoading(true);
+                setError(null);
 
-    const isFormComplete = Object.values(formData).every(v => v.trim() !== "");
+                const priceNum = Number(formData.unitPrice);
+                if (!Number.isFinite(priceNum) || priceNum < 0) {
+                    setError("Unit price must be a non-negative number");
+                    setLoading(false);
+                    return;
+                }
+
+                const res = await fetch(`${apiBase}/products`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        name: formData.name.trim(),
+                        categoryId: formData.categoryId,
+                        location: formData.location, // Must be Boston | Seattle | Oakland
+                        price: priceNum,
+                    }),
+                });
+                if (!res.ok) {
+                    const data = await res.json().catch(() => ({}));
+                    throw new Error(data?.error || `Failed to create product (${res.status})`);
+                }
+
+                // Reset and refresh
+                setFormData({ name: "", categoryId: "", location: "", unitPrice: "", description: "" });
+                setOpen(false);
+                onCreated?.();
+                router.refresh();
+            } catch (e: any) {
+                setError(e?.message || "Failed to create product");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+    const isFormComplete = formData.name.trim() !== "" && formData.categoryId.trim() !== "" && formData.location.trim() !== "" && formData.unitPrice.trim() !== "";
 
     return (
         <div>
@@ -97,12 +129,12 @@ export default function CreateProductModal({ categories, locations }: CreateProd
                         label="Category"
                         variant="outlined"
                         margin="normal"
-                        value={formData.category}
-                        onChange={e => handleChange("category", e.target.value)}
+                        value={formData.categoryId}
+                        onChange={e => handleChange("categoryId", e.target.value)}
                     >
-                        {categories.map((cat, idx) => (
-                            <MenuItem key={idx} value={cat}>
-                                {cat}
+                        {categories.map((cat) => (
+                            <MenuItem key={cat.id} value={cat.id}>
+                                {cat.name}
                             </MenuItem>
                         ))}
                     </TextField>
@@ -116,8 +148,8 @@ export default function CreateProductModal({ categories, locations }: CreateProd
                         value={formData.location}
                         onChange={e => handleChange("location", e.target.value)}
                     >
-                        {locations.map((loc, idx) => (
-                            <MenuItem key={idx} value={loc}>
+                        {locations.map((loc) => (
+                            <MenuItem key={loc} value={loc}>
                                 {loc}
                             </MenuItem>
                         ))}
@@ -146,16 +178,19 @@ export default function CreateProductModal({ categories, locations }: CreateProd
                     />
 
                     {/* Action buttons */}
+                    {error && (
+                      <Typography color="error" mt={1}>{error}</Typography>
+                    )}
                     <Box mt={3} display="flex" justifyContent="flex-end" gap={1}>
-                        <Button onClick={handleClose} color="inherit">
+                        <Button onClick={handleClose} color="inherit" disabled={loading}>
                             Cancel
                         </Button>
                         <Button
                             variant="default"
                             onClick={handleSubmit}
-                            disabled={!isFormComplete}
+                            disabled={!isFormComplete || loading}
                         >
-                            Create
+                            {loading ? "Saving..." : "Create"}
                         </Button>
                     </Box>
                 </Box>
