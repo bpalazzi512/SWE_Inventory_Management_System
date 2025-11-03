@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { ArrowUpDown } from "lucide-react";
-import CreateProductModal from "@/components/products/create-product-modal";
+import RecordTransactionModal from "@/components/transactions/record-transaction-modal";
 
 interface TransactionTableProps {
     transactions: Transaction[];
@@ -65,6 +65,7 @@ export function TransactionsTable({ transactions }: TransactionTableProps) {
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
+                            <RecordTransactionModal />
                         </div>
 
             {/* Table */}

@@ -6,6 +6,7 @@ export interface IProduct extends Document {
   sku: string;
   categoryId: mongoose.Types.ObjectId;
   price: number;
+  quantity: number;
 }
 
 const ProductSchema = new Schema<IProduct>(
@@ -30,6 +31,12 @@ const ProductSchema = new Schema<IProduct>(
       type: Number,
       required: true,
       min: 0,
+    },
+    quantity: {
+      type: Number,
+      required: true,
+      min: 0,
+      default: 0,
     },
   },
   {

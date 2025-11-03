@@ -1,7 +1,7 @@
 import app from "./app";
 import { connectDatabase } from "./config/database";
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 4000;
 
 // Connect to MongoDB and start server
 connectDatabase()

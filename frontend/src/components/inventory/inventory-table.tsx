@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { ArrowUpDown } from "lucide-react";
+import RecordTransactionModal from "@/components/transactions/record-transaction-modal";
 
 
 export function InventoryTable({ inventories }: { inventories: Inventory[] }) {
@@ -50,7 +51,7 @@ export function InventoryTable({ inventories }: { inventories: Inventory[] }) {
 
         <div className="flex flex-col gap-4">
             {/* Search Input */}
-            <div className="flex items-center">
+            <div className="flex items-center justify-between">
                 <Input
                     type="text"
                     placeholder="Search by name or SKU..."
@@ -58,6 +59,10 @@ export function InventoryTable({ inventories }: { inventories: Inventory[] }) {
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
+                {/* Record Stock Button */}
+                <div className="ml-2">
+                    <RecordTransactionModal />
+                </div>
             </div>
 
             {/* Table */}
