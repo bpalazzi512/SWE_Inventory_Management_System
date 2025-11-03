@@ -6,11 +6,13 @@ import Image from "next/image"
 import { LogOutIcon, Settings } from "lucide-react";
 import { Separator } from "./separator";
 import { usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 
 export default function Sidebar() {
 
     const pathname = usePathname();
+    const router = useRouter();
 
     if (pathname == "/login") {
         return null;
@@ -69,10 +71,13 @@ export default function Sidebar() {
                     >
                         <Settings />
                     </Link>
-                    <div className="flex flex-row gap-2 items-center">
-                        Log Out
-                        <LogOutIcon />
-                    </div>
+                    <button
+                      onClick={() => { localStorage.removeItem('token'); router.push('/login'); }}
+                      className="flex flex-row gap-2 items-center text-left"
+                    >
+                      Log Out
+                      <LogOutIcon />
+                    </button>
                 </div>
 
             </div>
