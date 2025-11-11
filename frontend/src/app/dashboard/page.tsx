@@ -2,21 +2,22 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Info, TriangleAlert } from "lucide-react";
 import SiteSurveyModal from "@/components/dashboard/site-survey-modal";
+import { Inventory, Transaction } from "@/types";
 
 type RecentTxItem = { date: string; sku: string; type: "IN" | "OUT"; quantity: number };
 
 async function fetchInventory() {
   const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000/api";
-  const res = await fetch(`${apiBase}/inventory`, { next: { revalidate: 0 } });
-  if (!res.ok) return [] as any[];
-  return res.json();
+  const res = await fetch(`${apiBase}/inventory`);
+  if (!res.ok) return [] as Inventory[];
+  return (res.json() as unknown) as Inventory[];
 }
 
 async function fetchTransactions() {
   const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000/api";
-  const res = await fetch(`${apiBase}/transactions`, { next: { revalidate: 0 } });
-  if (!res.ok) return [] as any[];
-  return res.json();
+  const res = await fetch(`${apiBase}/transactions`);
+  if (!res.ok) return [] as Transaction[];
+  return (res.json() as unknown) as Transaction[];
 }
 
 export default async function Dashboard() {

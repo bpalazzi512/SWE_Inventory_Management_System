@@ -4,19 +4,23 @@ import React, { useState } from "react";
 import { Modal, Box, Typography, TextField, MenuItem } from "@mui/material";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
-import { useRouter } from "next/navigation";
 
 export type CategoryOption = { id: string; name: string };
 
 interface CreateProductModalProps {
   categories: CategoryOption[];
   locations: string[]; // Expect: ["Boston", "Seattle", "Oakland"]
+  onCreateProduct?: (data: {
+    name: string;
+    categoryId: string;
+    location: string;
+    price: number;
+  }) => Promise<void>;
   onCreated?: () => void;
 }
 
-export default function CreateProductModal({ categories, locations, onCreated }: CreateProductModalProps) {
+export default function CreateProductModal({ categories, locations, onCreateProduct, onCreated }: CreateProductModalProps) {
     const [open, setOpen] = useState(false);
-    const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [formData, setFormData] = useState({
@@ -27,57 +31,51 @@ export default function CreateProductModal({ categories, locations, onCreated }:
         description: "",
     });
 
-
     const handleOpen = () => setOpen(true);
     const handleClose = () => {
+        if (loading) return;
         setOpen(false);
+        setError(null);
     };
 
     const handleChange = (field: string, value: string) => {
         setFormData(prev => ({ ...prev, [field]: value }));
     };
 
+    const handleSubmit = async () => {
+        if (!onCreateProduct) {
+            setError("Product creation function not provided");
+            return;
+        }
 
-        const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000/api";
+        try {
+            setLoading(true);
+            setError(null);
 
-        const handleSubmit = async () => {
-            try {
-                setLoading(true);
-                setError(null);
-
-                const priceNum = Number(formData.unitPrice);
-                if (!Number.isFinite(priceNum) || priceNum < 0) {
-                    setError("Unit price must be a non-negative number");
-                    setLoading(false);
-                    return;
-                }
-
-                const res = await fetch(`${apiBase}/products`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        name: formData.name.trim(),
-                        categoryId: formData.categoryId,
-                        location: formData.location, // Must be Boston | Seattle | Oakland
-                        price: priceNum,
-                    }),
-                });
-                if (!res.ok) {
-                    const data = await res.json().catch(() => ({}));
-                    throw new Error(data?.error || `Failed to create product (${res.status})`);
-                }
-
-                // Reset and refresh
-                setFormData({ name: "", categoryId: "", location: "", unitPrice: "", description: "" });
-                setOpen(false);
-                onCreated?.();
-                router.refresh();
-            } catch (e: any) {
-                setError(e?.message || "Failed to create product");
-            } finally {
+            const priceNum = Number(formData.unitPrice);
+            if (!Number.isFinite(priceNum) || priceNum < 0) {
+                setError("Unit price must be a non-negative number");
                 setLoading(false);
+                return;
             }
-        };
+
+            await onCreateProduct({
+                name: formData.name.trim(),
+                categoryId: formData.categoryId,
+                location: formData.location, // Must be Boston | Seattle | Oakland
+                price: priceNum,
+            });
+
+            // Reset and close
+            setFormData({ name: "", categoryId: "", location: "", unitPrice: "", description: "" });
+            setOpen(false);
+            onCreated?.();
+        } catch (e: unknown) {
+            setError(e instanceof Error ? e.message : "Failed to create product");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const isFormComplete = formData.name.trim() !== "" && formData.categoryId.trim() !== "" && formData.location.trim() !== "" && formData.unitPrice.trim() !== "";
 

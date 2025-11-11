@@ -1,6 +1,20 @@
-import Image from "next/image";
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
+  const router = useRouter();
+
+  useEffect(() => {
+    // Check if user is authenticated
+    const token = localStorage.getItem("token");
+    if (token) {
+      // Redirect to dashboard if authenticated
+      router.push("/dashboard");
+    }
+  }, [router]);
+
   return (
     <div className="w-full h-full flex flex-col items-center justify-center py-12 space-y-12">
 

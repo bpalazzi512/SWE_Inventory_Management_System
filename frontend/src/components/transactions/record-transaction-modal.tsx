@@ -4,19 +4,23 @@ import React, { useState } from "react";
 import { Modal, Box, Typography, TextField, MenuItem } from "@mui/material";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
-import { useRouter } from "next/navigation";
 
 type TxType = "IN" | "OUT";
 
 interface Props {
+  onCreateTransaction?: (data: {
+    sku: string;
+    type: "IN" | "OUT";
+    quantity: number;
+    description?: string;
+  }) => Promise<void>;
   onCreated?: () => void;
 }
 
-export default function RecordTransactionModal({ onCreated }: Props) {
+export default function RecordTransactionModal({ onCreateTransaction, onCreated }: Props) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
 
   const [form, setForm] = useState<{
     sku: string;
@@ -38,36 +42,29 @@ export default function RecordTransactionModal({ onCreated }: Props) {
 
   const isComplete = form.sku.trim() !== "" && form.quantity.trim() !== "";
 
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000/api";
-
   const handleSubmit = async () => {
+    if (!onCreateTransaction) {
+      setError("Transaction creation function not provided");
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
 
-      const res = await fetch(`${apiBase}/transactions`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          sku: form.sku.trim(),
-          type: form.type,
-          quantity: Number(form.quantity),
-          description: form.description?.trim() || undefined,
-        }),
+      await onCreateTransaction({
+        sku: form.sku.trim(),
+        type: form.type,
+        quantity: Number(form.quantity),
+        description: form.description?.trim() || undefined,
       });
-
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data?.error || `Request failed (${res.status})`);
-      }
 
       // Reset and close
       setForm({ sku: "", type: "IN", quantity: "", description: "" });
       setOpen(false);
       onCreated?.();
-      router.refresh(); // revalidate server components
-    } catch (e: any) {
-      setError(e?.message || "Failed to record transaction");
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Failed to record transaction");
     } finally {
       setLoading(false);
     }

@@ -4,33 +4,41 @@ import type { Product } from "@/types";
 import { useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
-import { ArrowUpDown } from "lucide-react";
+import { ArrowUpDown, Copy, Check } from "lucide-react";
 import CreateProductModal, { CategoryOption } from "@/components/products/create-product-modal";
 import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
+import { copyToClipboard } from "@/lib/utils";
 
 interface ProductTableProps {
     products: Product[];
     categories: CategoryOption[];
     locations: string[]; // Expect full names e.g., Boston | Seattle | Oakland
+    onCreateProduct?: (data: {
+      name: string;
+      categoryId: string;
+      location: string;
+      price: number;
+    }) => Promise<void>;
+    onDeleteProduct?: (productId: string) => Promise<void>;
+    onProductCreated?: () => void;
 }
 
-export function ProductsTable({ products, categories, locations }: ProductTableProps) {
-    const router = useRouter();
-    const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000/api";
+export function ProductsTable({ products, categories, locations, onCreateProduct, onDeleteProduct, onProductCreated }: ProductTableProps) {
 
     const [searchTerm, setSearchTerm] = useState("");
     const [sortKey, setSortKey] = useState<keyof Product>("name");
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+    const [copiedCell, setCopiedCell] = useState<string | null>(null);
+    const [hoveredCell, setHoveredCell] = useState<string | null>(null);
 
-    //Filter Inventories based on search
+    //Filter Products based on search
     const filteredProducts = useMemo(() => {
         return products.filter((t) =>
             [t.name.toLowerCase(), t.sku.toLowerCase()].some((value) =>
                 value.includes(searchTerm.toLowerCase())
             )
         );
-    }, [searchTerm]);
+    }, [products, searchTerm]);
 
     //Sort Products
     const sortedProducts = useMemo(() => {
@@ -63,15 +71,21 @@ export function ProductsTable({ products, categories, locations }: ProductTableP
         }
         const confirm = window.confirm(`Delete product ${p.name} (${p.sku})? This cannot be undone.`);
         if (!confirm) return;
+        if (!onDeleteProduct) {
+            alert("Delete function not provided");
+            return;
+        }
         try {
-            const res = await fetch(`${apiBase}/products/${p.id}`, { method: "DELETE" });
-            if (!res.ok) {
-                const data = await res.json().catch(() => ({}));
-                throw new Error(data?.error || `Failed to delete (${res.status})`);
-            }
-            router.refresh();
-        } catch (e: any) {
-            alert(e?.message || "Failed to delete product");
+            await onDeleteProduct(p.id);
+        } catch (e: unknown) {
+            alert(e instanceof Error ? e.message : "Failed to delete product");
+        }
+    };
+
+    const handleCopy = async (text: string, cellId: string) => {
+        const success = await copyToClipboard(text);
+        if (success) {
+            setCopiedCell(cellId);
         }
     };
 
@@ -88,7 +102,12 @@ export function ProductsTable({ products, categories, locations }: ProductTableP
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
 
-                <CreateProductModal categories={categories} locations={locations} />
+                <CreateProductModal
+                  categories={categories}
+                  locations={locations}
+                  onCreateProduct={onCreateProduct}
+                  onCreated={onProductCreated}
+                />
             </div>
 
             {/* Table */}
@@ -138,19 +157,112 @@ export function ProductsTable({ products, categories, locations }: ProductTableP
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {sortedProducts.map((t, idx) => (
-                            <TableRow key={idx}>
-                                <TableCell className="pl-4">{t.name}</TableCell>
-                                <TableCell>{t.sku}</TableCell>
-                                <TableCell>{t.category}</TableCell>
-                                <TableCell className="text-center">
-                                    ${t.unitPrice?.toFixed(2)}
-                                </TableCell>
-                                <TableCell className="text-right pr-6">
-                                    <Button variant="destructive" onClick={() => handleDelete(t)}>Delete</Button>
-                                </TableCell>
-                            </TableRow>
-                        ))}
+                        {sortedProducts.map((t, idx) => {
+                            const rowId = t.id || `product-${idx}`;
+                            return (
+                                <TableRow key={idx}>
+                                    <TableCell 
+                                        className="pl-4 relative group"
+                                        onMouseEnter={() => setHoveredCell(`name-${rowId}`)}
+                                        onMouseLeave={() => {
+                                            setHoveredCell(null);
+                                            setCopiedCell(null);
+                                        }}
+                                    >
+                                        <div 
+                                            className="cursor-pointer hover:bg-gray-100 transition-colors flex items-center gap-2"
+                                            onClick={() => handleCopy(t.name, `name-${rowId}`)}
+                                        >
+                                            <span>{t.name}</span>
+                                            <span className="flex-shrink-0 w-[14px] flex items-center justify-center">
+                                                {hoveredCell === `name-${rowId}` && (
+                                                    copiedCell === `name-${rowId}` ? (
+                                                        <Check size={14} className="text-green-600" />
+                                                    ) : (
+                                                        <Copy size={14} className="text-gray-600" />
+                                                    )
+                                                )}
+                                            </span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell 
+                                        className="relative group"
+                                        onMouseEnter={() => setHoveredCell(`sku-${rowId}`)}
+                                        onMouseLeave={() => {
+                                            setHoveredCell(null);
+                                            setCopiedCell(null);
+                                        }}
+                                    >
+                                        <div 
+                                            className="cursor-pointer hover:bg-gray-100 transition-colors flex items-center gap-2"
+                                            onClick={() => handleCopy(t.sku, `sku-${rowId}`)}
+                                        >
+                                            <span>{t.sku}</span>
+                                            <span className="flex-shrink-0 w-[14px] flex items-center justify-center">
+                                                {hoveredCell === `sku-${rowId}` && (
+                                                    copiedCell === `sku-${rowId}` ? (
+                                                        <Check size={14} className="text-green-600" />
+                                                    ) : (
+                                                        <Copy size={14} className="text-gray-600" />
+                                                    )
+                                                )}
+                                            </span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell 
+                                        className="relative group"
+                                        onMouseEnter={() => setHoveredCell(`category-${rowId}`)}
+                                        onMouseLeave={() => {
+                                            setHoveredCell(null);
+                                            setCopiedCell(null);
+                                        }}
+                                    >
+                                        <div 
+                                            className="cursor-pointer hover:bg-gray-100 transition-colors flex items-center gap-2"
+                                            onClick={() => handleCopy(t.category, `category-${rowId}`)}
+                                        >
+                                            <span>{t.category}</span>
+                                            <span className="flex-shrink-0 w-[14px] flex items-center justify-center">
+                                                {hoveredCell === `category-${rowId}` && (
+                                                    copiedCell === `category-${rowId}` ? (
+                                                        <Check size={14} className="text-green-600" />
+                                                    ) : (
+                                                        <Copy size={14} className="text-gray-600" />
+                                                    )
+                                                )}
+                                            </span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell 
+                                        className="text-center relative group"
+                                        onMouseEnter={() => setHoveredCell(`price-${rowId}`)}
+                                        onMouseLeave={() => {
+                                            setHoveredCell(null);
+                                            setCopiedCell(null);
+                                        }}
+                                    >
+                                        <div 
+                                            className="cursor-pointer hover:bg-gray-100 transition-colors flex items-center justify-center gap-2"
+                                            onClick={() => handleCopy(`$${t.unitPrice?.toFixed(2)}`, `price-${rowId}`)}
+                                        >
+                                            <span>${t.unitPrice?.toFixed(2)}</span>
+                                            <span className="flex-shrink-0 w-[14px] flex items-center justify-center">
+                                                {hoveredCell === `price-${rowId}` && (
+                                                    copiedCell === `price-${rowId}` ? (
+                                                        <Check size={14} className="text-green-600" />
+                                                    ) : (
+                                                        <Copy size={14} className="text-gray-600" />
+                                                    )
+                                                )}
+                                            </span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="text-right pr-6">
+                                        <Button variant="destructive" onClick={() => handleDelete(t)}>Delete</Button>
+                                    </TableCell>
+                                </TableRow>
+                            );
+                        })}
                     </TableBody>
                 </Table>
                 {sortedProducts.length === 0 && (
