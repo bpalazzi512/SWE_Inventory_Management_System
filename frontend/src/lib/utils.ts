@@ -28,3 +28,14 @@ export async function copyToClipboard(text: string): Promise<boolean> {
     }
   }
 }
+
+export function decodeJwt(token: string | null) {
+  if (!token) return null;
+  try {
+    const payload = token.split(".")[1];
+    const json = atob(payload.replace(/-/g, "+").replace(/_/g, "/"));
+    return JSON.parse(json);
+  } catch {
+    return null;
+  }
+}

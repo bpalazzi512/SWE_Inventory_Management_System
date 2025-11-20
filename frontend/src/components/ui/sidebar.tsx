@@ -1,6 +1,6 @@
 'use client'
 
-import { cn } from "@/lib/utils";
+import { cn, decodeJwt } from "@/lib/utils";
 import Link from "next/link";
 import Image from "next/image"
 import { LogOutIcon, Settings } from "lucide-react";
@@ -20,17 +20,6 @@ export default function Sidebar() {
     const pathname = usePathname();
     const router = useRouter();
 
-    function decodeJwt(token: string | null) {
-        if (!token) return null;
-        console.log(token);
-        try {
-            const payload = token.split('.')[1];
-            const json = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
-            return JSON.parse(json);
-        } catch {
-            return null;
-        }
-    }
 
     useEffect(() => {
         const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
