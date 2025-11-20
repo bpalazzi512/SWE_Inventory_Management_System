@@ -1,9 +1,11 @@
 "use client";
 
 import { User } from "@/types";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { decodeJwt } from "@/lib/utils";
+import AddUserModal from "@/components/settings/add-user-modal";
+import { Button } from "@/components/ui/button";
 
 export default function SettingsPage() {
     const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -106,6 +108,47 @@ export default function SettingsPage() {
         }
     }
 
+    async function createUser(data: {
+        firstName: string;
+        lastName: string;
+        email: string;
+        password: string;
+    }): Promise<void> {
+        const token = localStorage.getItem("token");
+        const res = await fetch(`${apiBase}/users`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+            body: JSON.stringify(data),
+        });
+
+        if (!res.ok) {
+            const errorData = await res.json().catch(() => ({}));
+            throw new Error((errorData as any)?.error || `Request failed (${res.status})`);
+        }
+    }
+
+
+    const handleAddUser = useCallback(
+        async (data: {
+            firstName: string;
+            lastName: string;
+            email: string;
+            password: string;
+        }) => {
+            try {
+                await createUser(data);
+                // Refresh users after successful creation
+                await fetchUsers();
+            } catch (e: unknown) {
+                throw e; // Re-throw to let the modal handle the error
+            }
+        },
+        []
+    );
+
 
     return (
         <div className="p-8 w-full bg-gray-50">
@@ -146,12 +189,13 @@ export default function SettingsPage() {
                             />
                         </div>
 
-                        <button
+                        <Button
                             type="submit"
-                            className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                            variant="default"
+                            className="mt-4 px-4 py-2"
                         >
                             {isUpdating ? "Updating..." : "Save Changes"}
-                        </button>
+                        </Button>
                     </form>
                 )}
             </section>
@@ -160,12 +204,10 @@ export default function SettingsPage() {
             <section className="border border-2 p-6 rounded-lg shadow">
                 <div className="flex items-center justify-between mb-4">
                     <h2 className="text-xl font-semibold">Users</h2>
-                    <button
-                        onClick={() => setModalOpen(true)}
-                        className="bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-900"
-                    >
-                        Add User
-                    </button>
+                    <AddUserModal
+                        onAddUser={handleAddUser }
+                        onCreated={fetchUsers}
+                    />
                 </div>
 
                 {isLoadingUsers ? (
