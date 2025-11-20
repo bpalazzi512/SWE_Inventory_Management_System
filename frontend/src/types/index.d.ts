@@ -40,3 +40,10 @@ export type QuickAction = {
   name: string;
   href: string;
 };
+
+export type User = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+}
