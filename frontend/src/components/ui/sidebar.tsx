@@ -14,8 +14,11 @@ import { useState, useEffect } from "react";
 export default function Sidebar() {
 
     const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000/api";
+    const linkStyle = `text-xl font-medium text-brand-primary transition-colors py-4`
 
     const [currentUser, setCurrentUser] = useState<string | null>(null);
+    const pathname = usePathname();
+    const router = useRouter();
 
     function decodeJwt(token: string | null) {
         if (!token) return null;
@@ -48,16 +51,11 @@ export default function Sidebar() {
                 .catch(() => setCurrentUser(null));
             return;
         }
-    }, []);
-
-    const pathname = usePathname();
-    const router = useRouter();
+    }, [pathname]);
 
     if (pathname == "/login") {
         return null;
     }
-
-    const linkStyle = `text-xl font-medium text-brand-primary transition-colors py-4`
 
     return (
         <div className="fixed left-6 top-6 bottom-6 w-[200px] bg-white rounded-xl shadow-lg p-6">
