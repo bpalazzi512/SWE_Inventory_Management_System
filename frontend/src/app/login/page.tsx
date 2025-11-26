@@ -39,7 +39,7 @@ export default function LoginPage() {
         }
         const data = await res.json();
         localStorage.setItem("token", data.token);
-        router.push("/dashboard");
+        router.push("/");
       } else {
         if (password !== confirmPassword) {
           throw new Error("Passwords do not match");
@@ -66,7 +66,7 @@ export default function LoginPage() {
         }
         const loginData = await loginRes.json();
         localStorage.setItem("token", loginData.token);
-        router.push("/dashboard");
+        router.push("/");
       }
     } catch (e: any) {
       setError(e?.message || "Login failed");

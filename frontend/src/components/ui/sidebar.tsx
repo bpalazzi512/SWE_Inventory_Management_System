@@ -63,8 +63,8 @@ export default function Sidebar() {
                     <Separator className="mt-6 mb-2" />
 
                     <Link
-                        href="/dashboard"
-                        className={`${linkStyle} ${pathname == "/dashboard" ? 'text-slate-700' : ''}`}
+                        href="/"
+                        className={`${linkStyle} ${pathname == "/" ? 'text-slate-700' : ''}`}
                     >
                         Dashboard
                     </Link>
