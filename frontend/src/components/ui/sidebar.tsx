@@ -1,6 +1,6 @@
 'use client'
 
-import { cn } from "@/lib/utils";
+import { cn, decodeJwt } from "@/lib/utils";
 import Link from "next/link";
 import Image from "next/image"
 import { LogOutIcon, Settings } from "lucide-react";
@@ -14,20 +14,12 @@ import { useState, useEffect } from "react";
 export default function Sidebar() {
 
     const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000/api";
+    const linkStyle = `text-xl font-medium text-brand-primary transition-colors py-4`
 
     const [currentUser, setCurrentUser] = useState<string | null>(null);
+    const pathname = usePathname();
+    const router = useRouter();
 
-    function decodeJwt(token: string | null) {
-        if (!token) return null;
-        console.log(token);
-        try {
-            const payload = token.split('.')[1];
-            const json = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
-            return JSON.parse(json);
-        } catch {
-            return null;
-        }
-    }
 
     useEffect(() => {
         const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
@@ -48,16 +40,11 @@ export default function Sidebar() {
                 .catch(() => setCurrentUser(null));
             return;
         }
-    }, []);
-
-    const pathname = usePathname();
-    const router = useRouter();
+    }, [pathname]);
 
     if (pathname == "/login") {
         return null;
     }
-
-    const linkStyle = `text-xl font-medium text-brand-primary transition-colors py-4`
 
     return (
         <div className="fixed left-6 top-6 bottom-6 w-[200px] bg-white rounded-xl shadow-lg p-6">
@@ -76,8 +63,8 @@ export default function Sidebar() {
                     <Separator className="mt-6 mb-2" />
 
                     <Link
-                        href="/dashboard"
-                        className={`${linkStyle} ${pathname == "/dashboard" ? 'text-slate-700' : ''}`}
+                        href="/"
+                        className={`${linkStyle} ${pathname == "/" ? 'text-slate-700' : ''}`}
                     >
                         Dashboard
                     </Link>

@@ -18,6 +18,12 @@ export default function LoginPage() {
   const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000/api";
 
   const onSubmit = async () => {
+    // basic client-side validation so Enter won't submit invalid form
+    if (loading) return;
+    if (!email || !password || (mode === "register" && (!firstName || !lastName || !confirmPassword))) {
+      setError("Please fill all required fields.");
+      return;
+    }
     try {
       setLoading(true);
       setError(null);
@@ -33,7 +39,7 @@ export default function LoginPage() {
         }
         const data = await res.json();
         localStorage.setItem("token", data.token);
-        router.push("/dashboard");
+        router.push("/");
       } else {
         if (password !== confirmPassword) {
           throw new Error("Passwords do not match");
@@ -60,7 +66,7 @@ export default function LoginPage() {
         }
         const loginData = await loginRes.json();
         localStorage.setItem("token", loginData.token);
-        router.push("/dashboard");
+        router.push("/");
       }
     } catch (e: any) {
       setError(e?.message || "Login failed");
@@ -73,7 +79,14 @@ export default function LoginPage() {
     <div className="min-h-screen w-full flex flex-col items-center justify-center p-8 space-y-6">
       <Image src="/images/restockedlogin.png" alt="ReStocked Logo" width={610} height={310} priority />
       <p className="text-2xl text-text-primary">Inventory simplified.</p>
-      <div className="bg-white rounded-xl shadow p-6 w-full max-w-sm flex flex-col gap-3">
+
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          onSubmit();
+        }}
+        className="bg-white rounded-xl shadow p-6 w-full max-w-sm flex flex-col gap-3"
+      >
         {mode === "register" && (
           <>
             <div className="flex gap-3">
@@ -120,6 +133,7 @@ export default function LoginPage() {
 
         {error && <div className="text-red-600 text-sm">{error}</div>}
         <Button
+          type="submit"
           size="lg"
           onClick={onSubmit}
           disabled={
@@ -132,6 +146,7 @@ export default function LoginPage() {
           {loading ? (mode === "login" ? "Logging in..." : "Registering...") : mode === "login" ? "Login" : "Register"}
         </Button>
         <button
+          type="button"
           onClick={() => {
             setMode(mode === "login" ? "register" : "login");
             setError(null);
@@ -140,7 +155,7 @@ export default function LoginPage() {
         >
           {mode === "login" ? "New here? Create an account" : "Already have an account? Log in"}
         </button>
-      </div>
+      </form>
     </div>
   );
 }
