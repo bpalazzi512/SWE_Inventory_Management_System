@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { decodeJwt } from "@/lib/utils";
 import AddUserModal from "@/components/settings/add-user-modal";
 import { Button } from "@/components/ui/button";
+import { api } from "@/lib/api";
 
 export default function SettingsPage() {
     const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -15,16 +16,9 @@ export default function SettingsPage() {
     const [isUpdating, setIsUpdating] = useState(false);
 
     const pathname = usePathname();
-    const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000/api";
 
     async function fetchUsers(): Promise<User[]> {
-        const res = await fetch(`${apiBase}/users`, { cache: "no-store" });
-
-        if (!res.ok) {
-            throw new Error("Failed to fetch users");
-        }
-
-        const data = await res.json();
+        const data = await api.get<User[]>("/users");
         return data.map((u: User) => ({
             id: u.id ?? 0,
             firstName: u.firstName ?? "",
@@ -43,25 +37,18 @@ export default function SettingsPage() {
         const id = payload?.sub;
         if (!id) return;
 
-
-        fetch(`${apiBase}/users/${id}`, {
-            headers: { Authorization: `Bearer ${token}` },
-            cache: "no-store",
-        })
-            .then((res) => {
-                if (!res.ok) throw new Error("Failed to fetch user");
-                return res.json();
-            })
-            .then((data: User) => {
-                setCurrentUser({
-                    id: id,
-                    firstName: data.firstName ?? "",
-                    lastName: data.lastName ?? "",
-                    email: data.email ?? "",
-                    password: data.password ?? "",
-                });
-            })
-            .catch(() => setCurrentUser(null));
+        try {
+            const data: User = await api.get<User>(`/users/${id}`);
+            setCurrentUser({
+                id: id,
+                firstName: data.firstName ?? "",
+                lastName: data.lastName ?? "",
+                email: data.email ?? "",
+                password: data.password ?? "",
+            });
+        } catch {
+            setCurrentUser(null);
+        }
     }
 
     useEffect(() => {
@@ -85,19 +72,11 @@ export default function SettingsPage() {
         setIsUpdating(true);
 
         try {
-            const res = await fetch(`${apiBase}/users/${currentUser.id}`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    firstName: currentUser.firstName,
-                    lastName: currentUser.lastName,
-                    email: currentUser.email,
-                }),
+            const updated = await api.put<User>(`/users/${currentUser.id}`, {
+                firstName: currentUser.firstName,
+                lastName: currentUser.lastName,
+                email: currentUser.email,
             });
-
-            if (!res.ok) throw new Error("Failed to update profile");
-
-            const updated = await res.json();
             setCurrentUser(updated);
             alert("Profile updated!");
         } catch (err: any) {
@@ -114,20 +93,7 @@ export default function SettingsPage() {
         email: string;
         password: string;
     }): Promise<void> {
-        const token = localStorage.getItem("token");
-        const res = await fetch(`${apiBase}/users`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            },
-            body: JSON.stringify(data),
-        });
-
-        if (!res.ok) {
-            const errorData = await res.json().catch(() => ({}));
-            throw new Error((errorData as any)?.error || `Request failed (${res.status})`);
-        }
+        await api.post("/users", data);
     }
 
 

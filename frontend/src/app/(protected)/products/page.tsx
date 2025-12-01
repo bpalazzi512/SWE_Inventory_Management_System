@@ -3,19 +3,10 @@ import type { Product } from "@/types";
 import { ProductsTable } from "@/components/products/products-table";
 import type { CategoryOption } from "@/components/products/create-product-modal";
 import { useState, useEffect, useCallback } from "react";
-
-const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000/api";
+import { api } from "@/lib/api";
 
 async function fetchProducts(): Promise<Product[]> {
-  const token = localStorage.getItem("token");
-  const res = await fetch(`${apiBase}/products`, {
-    cache: "no-store",
-    headers: {
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-  });
-  if (!res.ok) throw new Error(`Failed to fetch products: ${res.status}`);
-  const data = await res.json();
+  const data = await api.get<unknown[]>("/products");
   return (data as unknown[]).map((p: any) => ({
     id: p._id,
     name: p.name,
@@ -27,7 +18,6 @@ async function fetchProducts(): Promise<Product[]> {
 }
 
 async function fetchCategories(): Promise<CategoryOption[]> {
-  const token = localStorage.getItem("token");
   // Ensure the standard set of categories exist (matching the previous UI options)
   const defaultNames = [
     "Routers",
@@ -41,14 +31,7 @@ async function fetchCategories(): Promise<CategoryOption[]> {
   ];
 
   // 1) Fetch existing categories
-  let res = await fetch(`${apiBase}/categories`, {
-    cache: "no-store",
-    headers: {
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-  });
-  if (!res.ok) throw new Error(`Failed to fetch categories: ${res.status}`);
-  let data: unknown[] = await res.json();
+  let data: unknown[] = await api.get<unknown[]>("/categories");
 
   const existingNames = new Set((data as any[]).map((c: any) => String(c.name)));
   const missing = defaultNames.filter((n) => !existingNames.has(n));
@@ -57,25 +40,11 @@ async function fetchCategories(): Promise<CategoryOption[]> {
   if (missing.length > 0) {
     await Promise.all(
       missing.map((name) =>
-        fetch(`${apiBase}/categories`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-          body: JSON.stringify({ name }),
-        }).catch(() => undefined)
+        api.post("/categories", { name }).catch(() => undefined)
       )
     );
     // 3) Re-fetch to get ids of the now-complete set
-    res = await fetch(`${apiBase}/categories`, {
-      cache: "no-store",
-      headers: {
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-    });
-    if (!res.ok) throw new Error(`Failed to fetch categories after seed: ${res.status}`);
-    data = await res.json();
+    data = await api.get<unknown[]>("/categories");
   }
 
   // 4) Return mapped options
@@ -90,35 +59,11 @@ async function createProduct(data: {
   location: string;
   price: number;
 }): Promise<void> {
-  const token = localStorage.getItem("token");
-  const res = await fetch(`${apiBase}/products`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-    body: JSON.stringify(data),
-  });
-
-  if (!res.ok) {
-    const errorData = await res.json().catch(() => ({}));
-    throw new Error((errorData as any)?.error || `Request failed (${res.status})`);
-  }
+  await api.post("/products", data);
 }
 
 async function deleteProduct(productId: string): Promise<void> {
-  const token = localStorage.getItem("token");
-  const res = await fetch(`${apiBase}/products/${productId}`, {
-    method: "DELETE",
-    headers: {
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-  });
-
-  if (!res.ok) {
-    const errorData = await res.json().catch(() => ({}));
-    throw new Error((errorData as any)?.error || `Failed to delete (${res.status})`);
-  }
+  await api.delete(`/products/${productId}`);
 }
 
 export default function ProductsPage() {

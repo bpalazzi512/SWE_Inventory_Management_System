@@ -9,11 +9,11 @@ import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { User } from "@/types";
 import { useState, useEffect } from "react";
+import { api } from "@/lib/api";
 
 
 export default function Sidebar() {
 
-    const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000/api";
     const linkStyle = `text-xl font-medium text-brand-primary transition-colors py-4`
 
     const [currentUser, setCurrentUser] = useState<string | null>(null);
@@ -28,21 +28,15 @@ export default function Sidebar() {
         const id = payload?.sub;
 
         if (id) {
-            fetch(`${apiBase}/users/${id}`, {
-                headers: { Authorization: `Bearer ${token}` },
-                cache: "no-store",
-            })
-                .then((res) => {
-                    if (!res.ok) throw new Error("Failed to fetch user");
-                    return res.json();
-                })
+            api.get<User>(`/users/${id}`)
                 .then((data: User) => setCurrentUser(data.firstName))
                 .catch(() => setCurrentUser(null));
             return;
         }
     }, [pathname]);
 
-    if (pathname == "/login") {
+    // Hide sidebar on public routes
+    if (pathname === "/" || pathname === "/login" || pathname === "/register") {
         return null;
     }
 
@@ -63,8 +57,8 @@ export default function Sidebar() {
                     <Separator className="mt-6 mb-2" />
 
                     <Link
-                        href="/"
-                        className={`${linkStyle} ${pathname == "/" ? 'text-slate-700' : ''}`}
+                        href="/dashboard"
+                        className={`${linkStyle} ${pathname == "/dashboard" ? 'text-slate-700' : ''}`}
                     >
                         Dashboard
                     </Link>
@@ -104,7 +98,7 @@ export default function Sidebar() {
                             <Settings />
                         </Link>
                         <button
-                            onClick={() => { localStorage.removeItem('token'); router.push('/login'); }}
+                            onClick={() => { localStorage.removeItem('token'); router.push('/'); }}
                             className="flex flex-row gap-2 items-center text-left cursor-pointer"
                         >
                             <LogOutIcon />
