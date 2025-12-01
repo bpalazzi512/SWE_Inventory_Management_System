@@ -2,15 +2,10 @@
 import type { Inventory } from "@/types";
 import { InventoryTable } from "@/components/inventory/inventory-table";
 import { useState, useEffect, useCallback } from "react";
-
-const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000/api";
+import { api } from "@/lib/api";
 
 async function fetchInventory(): Promise<Inventory[]> {
-  const res = await fetch(`${apiBase}/inventory`, { cache: "no-store" });
-  if (!res.ok) {
-    throw new Error(`Failed to fetch inventory: ${res.status}`);
-  }
-  const data = await res.json();
+  const data = await api.get<Inventory[]>("/inventory");
   // Ensure shape matches Inventory type with sensible defaults
   return (data as Inventory[]).map((i) => ({
     name: i.name,
@@ -29,20 +24,7 @@ async function createTransaction(data: {
   quantity: number;
   description?: string;
 }): Promise<void> {
-  const token = localStorage.getItem("token");
-  const res = await fetch(`${apiBase}/transactions`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-    body: JSON.stringify(data),
-  });
-
-  if (!res.ok) {
-    const errorData = await res.json().catch(() => ({}));
-    throw new Error(errorData?.error || `Request failed (${res.status})`);
-  }
+  await api.post("/transactions", data);
 }
 
 export default function Inventory() {

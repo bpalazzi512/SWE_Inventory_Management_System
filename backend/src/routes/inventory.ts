@@ -1,10 +1,11 @@
 import { Router } from 'express';
 import Product from '../models/Product';
+import { authenticateToken } from '../middleware/auth';
 
 const router = Router();
 
-// Return inventory view for frontend
-router.get('/', async (_req, res) => {
+// Return inventory view for frontend - protected
+router.get('/', authenticateToken, async (_req, res) => {
   try {
     const products = await Product.find().populate('categoryId', 'name');
     const items = products.map((p: any) => ({

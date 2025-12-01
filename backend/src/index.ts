@@ -1,3 +1,7 @@
+// Load environment variables from .env file first
+import dotenv from 'dotenv';
+dotenv.config();
+
 import app from "./app";
 import { connectDatabase } from "./config/database";
 

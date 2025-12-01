@@ -7,9 +7,12 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { api } from "@/lib/api";
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
@@ -23,27 +26,33 @@ export default function LoginPage() {
 
   const onSubmit = async () => {
     if (loading) return;
-    if (!email || !password) {
+    if (!email || !password || !firstName || !lastName || !confirmPassword) {
       setError("Please fill all required fields.");
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
       return;
     }
     try {
       setLoading(true);
       setError(null);
-      const data = await api.post<{ token: string; user: unknown }>(
-        "/auth/login",
-        { email, password },
+
+      // Use the new /auth/register endpoint
+      const data = await api.post<{ token: string; user: any }>(
+        "/auth/register",
+        { firstName, lastName, email, password },
         {
           requireAuth: false,
           useApiKey: true,
         }
       );
+
+      // Store token and redirect to dashboard
       localStorage.setItem("token", data.token);
       router.push("/dashboard");
-    } catch (e: unknown) {
-      const message =
-        e instanceof Error ? e.message : "Login failed";
-      setError(message);
+    } catch (e: any) {
+      setError(e?.message || "Registration failed");
     } finally {
       setLoading(false);
     }
@@ -58,7 +67,7 @@ export default function LoginPage() {
         height={310}
         priority
       />
-      <p className="text-2xl text-text-primary">Inventory simplified.</p>
+      <p className="text-2xl text-text-primary">Create your ReStocked account.</p>
 
       <form
         onSubmit={(e) => {
@@ -67,6 +76,22 @@ export default function LoginPage() {
         }}
         className="bg-white rounded-xl shadow p-6 w-full max-w-sm flex flex-col gap-3"
       >
+        <div className="flex gap-3">
+          <input
+            type="text"
+            placeholder="First name"
+            className="border rounded px-3 py-2 w-1/2"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+          />
+          <input
+            type="text"
+            placeholder="Last name"
+            className="border rounded px-3 py-2 w-1/2"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+          />
+        </div>
         <input
           type="email"
           placeholder="Email"
@@ -81,20 +106,36 @@ export default function LoginPage() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
+        <input
+          type="password"
+          placeholder="Confirm password"
+          className="border rounded px-3 py-2"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+        />
 
         {error && <div className="text-red-600 text-sm">{error}</div>}
         <Button
           type="submit"
           size="lg"
           onClick={onSubmit}
-          disabled={loading || !email || !password}
+          disabled={
+            loading ||
+            !email ||
+            !password ||
+            !firstName ||
+            !lastName ||
+            !confirmPassword
+          }
         >
-          {loading ? "Logging in..." : "Login"}
+          {loading ? "Registering..." : "Register"}
         </Button>
         <div className="text-sm text-brand-primary mt-1 underline text-center">
-          <Link href="/register">New here? Create an account</Link>
+          <Link href="/login">Already have an account? Log in</Link>
         </div>
       </form>
     </div>
   );
 }
+
+

@@ -2,21 +2,10 @@
 import type { Transaction } from "@/types";
 import { TransactionsTable } from "@/components/transactions/transactions-table";
 import { useState, useEffect, useCallback } from "react";
-
-const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000/api";
+import { api } from "@/lib/api";
 
 async function fetchTransactions(): Promise<Transaction[]> {
-  const token = localStorage.getItem("token");
-  const res = await fetch(`${apiBase}/transactions`, {
-    cache: "no-store",
-    headers: {
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-  });
-  if (!res.ok) {
-    throw new Error(`Failed to fetch transactions: ${res.status}`);
-  }
-  return res.json();
+  return api.get<Transaction[]>("/transactions");
 }
 
 async function createTransaction(data: {
@@ -25,20 +14,7 @@ async function createTransaction(data: {
   quantity: number;
   description?: string;
 }): Promise<void> {
-  const token = localStorage.getItem("token");
-  const res = await fetch(`${apiBase}/transactions`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-    body: JSON.stringify(data),
-  });
-
-  if (!res.ok) {
-    const errorData = await res.json().catch(() => ({}));
-    throw new Error(errorData?.error || `Request failed (${res.status})`);
-  }
+  await api.post("/transactions", data);
 }
 
 export default function Transactions() {
