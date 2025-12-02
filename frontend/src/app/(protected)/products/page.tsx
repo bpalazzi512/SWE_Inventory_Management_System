@@ -5,14 +5,28 @@ import type { CategoryOption } from "@/components/products/create-product-modal"
 import { useState, useEffect, useCallback } from "react";
 import { api } from "@/lib/api";
 
+interface ApiProduct {
+  _id: string;
+  name: string;
+  sku: string;
+  categoryId?: { _id: string; name: string } | string;
+  price: number;
+  quantity: number;
+}
+
+interface ApiCategory {
+  _id: string;
+  name: string;
+}
+
 async function fetchProducts(): Promise<Product[]> {
-  const data = await api.get<unknown[]>("/products");
-  return (data as unknown[]).map((p: any) => ({
+  const data = await api.get<ApiProduct[]>("/products");
+  return data.map((p) => ({
     id: p._id,
     name: p.name,
     sku: p.sku,
     description: "", // backend has no description field
-    category: p.categoryId?.name ?? "",
+    category: typeof p.categoryId === "object" && p.categoryId !== null && "name" in p.categoryId ? p.categoryId.name : "",
     unitPrice: Number(p.price ?? 0),
   }));
 }
@@ -31,9 +45,9 @@ async function fetchCategories(): Promise<CategoryOption[]> {
   ];
 
   // 1) Fetch existing categories
-  let data: unknown[] = await api.get<unknown[]>("/categories");
+  let data: ApiCategory[] = await api.get<ApiCategory[]>("/categories");
 
-  const existingNames = new Set((data as any[]).map((c: any) => String(c.name)));
+  const existingNames = new Set(data.map((c) => String(c.name)));
   const missing = defaultNames.filter((n) => !existingNames.has(n));
 
   // 2) Create missing categories (ignore conflicts if created elsewhere concurrently)
@@ -44,13 +58,13 @@ async function fetchCategories(): Promise<CategoryOption[]> {
       )
     );
     // 3) Re-fetch to get ids of the now-complete set
-    data = await api.get<unknown[]>("/categories");
+    data = await api.get<ApiCategory[]>("/categories");
   }
 
   // 4) Return mapped options
-  return ((data as any[])
+  return data
     .filter((c) => defaultNames.includes(String(c.name)))
-    .map((c) => ({ id: c._id, name: c.name })));
+    .map((c) => ({ id: c._id, name: c.name }));
 }
 
 async function createProduct(data: {

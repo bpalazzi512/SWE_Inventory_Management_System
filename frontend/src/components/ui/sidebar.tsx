@@ -1,6 +1,6 @@
 'use client'
 
-import { cn, decodeJwt } from "@/lib/utils";
+import { decodeJwt } from "@/lib/utils";
 import Link from "next/link";
 import Image from "next/image"
 import { LogOutIcon, Settings } from "lucide-react";
@@ -24,8 +24,8 @@ export default function Sidebar() {
     useEffect(() => {
         const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
         if (!token) return;
-        const payload: any = decodeJwt(token);
-        const id = payload?.sub;
+        const payload = decodeJwt(token);
+        const id = payload && typeof payload === "object" && "sub" in payload ? String(payload.sub) : null;
 
         if (id) {
             api.get<User>(`/users/${id}`)

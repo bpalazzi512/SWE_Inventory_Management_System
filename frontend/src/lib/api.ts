@@ -11,7 +11,7 @@ const API_KEY_HEADER = process.env.NEXT_PUBLIC_API_KEY_HEADER || "x-api-key";
 
 export interface ApiRequestOptions {
   method?: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
-  body?: any;
+  body?: unknown;
   headers?: Record<string, string>;
   requireAuth?: boolean; // If true, will throw error if no token is found
   useApiKey?: boolean; // If true, include API key header when configured
@@ -25,7 +25,7 @@ export interface ApiRequestOptions {
  * @returns Promise with parsed JSON response
  * @throws Error if request fails or if requireAuth is true and no token is found
  */
-export async function apiRequest<T = any>(
+export async function apiRequest<T = unknown>(
   route: string,
   options: ApiRequestOptions = {}
 ): Promise<T> {
@@ -112,19 +112,19 @@ export async function apiRequest<T = any>(
  * Convenience methods for common HTTP verbs
  */
 export const api = {
-  get: <T = any>(route: string, options?: Omit<ApiRequestOptions, "method" | "body">) =>
+  get: <T = unknown>(route: string, options?: Omit<ApiRequestOptions, "method" | "body">) =>
     apiRequest<T>(route, { ...options, method: "GET" }),
 
-  post: <T = any>(route: string, body?: any, options?: Omit<ApiRequestOptions, "method" | "body">) =>
+  post: <T = unknown>(route: string, body?: unknown, options?: Omit<ApiRequestOptions, "method" | "body">) =>
     apiRequest<T>(route, { ...options, method: "POST", body }),
 
-  put: <T = any>(route: string, body?: any, options?: Omit<ApiRequestOptions, "method" | "body">) =>
+  put: <T = unknown>(route: string, body?: unknown, options?: Omit<ApiRequestOptions, "method" | "body">) =>
     apiRequest<T>(route, { ...options, method: "PUT", body }),
 
-  delete: <T = any>(route: string, options?: Omit<ApiRequestOptions, "method" | "body">) =>
+  delete: <T = unknown>(route: string, options?: Omit<ApiRequestOptions, "method" | "body">) =>
     apiRequest<T>(route, { ...options, method: "DELETE" }),
 
-  patch: <T = any>(route: string, body?: any, options?: Omit<ApiRequestOptions, "method" | "body">) =>
+  patch: <T = unknown>(route: string, body?: unknown, options?: Omit<ApiRequestOptions, "method" | "body">) =>
     apiRequest<T>(route, { ...options, method: "PATCH", body }),
 };
 
