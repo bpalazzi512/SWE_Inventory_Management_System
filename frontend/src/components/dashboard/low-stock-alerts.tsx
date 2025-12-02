@@ -4,7 +4,6 @@ import type { Inventory } from "@/types";
 import { useEffect, useState, useCallback } from "react";
 import { api } from "@/lib/api";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { AlertTriangle } from "lucide-react";
 
 async function fetchInventory(): Promise<Inventory[]> {
@@ -49,14 +48,9 @@ export function LowStockAlertsCard() {
 
   return (
     <Card className="flex flex-col justify-start h-full">
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <AlertTriangle className="text-muted-foreground" size={18} />
-          <h2 className="font-semibold">Low Stock Alerts</h2>
-        </div>
-        <Button variant="ghost" size="sm" onClick={load}>
-          Refresh
-        </Button>
+      <div className="flex items-center gap-2 mb-1">
+        <AlertTriangle className="text-muted-foreground" size={18} />
+        <h2 className="font-semibold">Low Stock Alerts</h2>
       </div>
 
       {loading && lowStockItems.length === 0 && (
