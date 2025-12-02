@@ -33,8 +33,8 @@ export default function SettingsPage() {
         const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
         if (!token) return;
 
-        const payload: any = decodeJwt(token);
-        const id = payload?.sub;
+        const payload = decodeJwt(token);
+        const id = payload && typeof payload === "object" && "sub" in payload ? String(payload.sub) : null;
         if (!id) return;
 
         try {
@@ -79,8 +79,8 @@ export default function SettingsPage() {
             });
             setCurrentUser(updated);
             alert("Profile updated!");
-        } catch (err: any) {
-            alert(err.message);
+        } catch (err: unknown) {
+            alert(err instanceof Error ? err.message : "Failed to update profile");
         } finally {
             fetchUsers();
             setIsUpdating(false);
