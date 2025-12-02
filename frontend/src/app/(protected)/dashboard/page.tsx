@@ -7,6 +7,7 @@ import SiteSurveyModal from "@/components/dashboard/site-survey-modal";
 import { Inventory, Transaction } from "@/types";
 import { api } from "@/lib/api";
 import { useState, useEffect } from "react";
+import { LowStockAlertsCard } from "@/components/dashboard/low-stock-alerts";
 
 type RecentTxItem = { date: string; sku: string; type: "IN" | "OUT"; quantity: number };
 

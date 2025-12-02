@@ -39,7 +39,11 @@ export default function RegisterPage() {
       setError(null);
 
       // Use the new /auth/register endpoint
+<<<<<<< HEAD
       const data = await api.post<{ token: string; user: { id: string; firstName: string; lastName: string; email: string } }>(
+=======
+      const data = await api.post<{ token: string; user: any }>(
+>>>>>>> 23a6136 (merged)
         "/auth/register",
         { firstName, lastName, email, password },
         {
@@ -51,8 +55,13 @@ export default function RegisterPage() {
       // Store token and redirect to dashboard
       localStorage.setItem("token", data.token);
       router.push("/dashboard");
+<<<<<<< HEAD
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Registration failed");
+=======
+    } catch (e: any) {
+      setError(e?.message || "Registration failed");
+>>>>>>> 23a6136 (merged)
     } finally {
       setLoading(false);
     }
