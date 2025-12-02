@@ -15,12 +15,14 @@ export interface CreateProductDto {
   categoryId: string;
   location: Location;
   price: number;
+  lowStockThreshold?: number;
 }
 
 export interface UpdateProductDto {
   name?: string;
   categoryId?: string;
   price?: number;
+  lowStockThreshold?: number;
 }
 
 export class ProductService {
@@ -75,11 +77,17 @@ export class ProductService {
       sku = `${locationCode}${String(num).padStart(5, '0')}`;
     }
 
+    const threshold =
+      typeof productData.lowStockThreshold === 'number' && productData.lowStockThreshold > 0
+        ? productData.lowStockThreshold
+        : -1;
+
     const product = new Product({
       name: productData.name,
       sku,
       categoryId: productData.categoryId,
       price: productData.price,
+      lowStockThreshold: threshold,
     });
 
     return await product.save();

@@ -12,6 +12,7 @@ interface ApiProduct {
   categoryId?: { _id: string; name: string } | string;
   price: number;
   quantity: number;
+  lowStockThreshold?: number;
 }
 
 interface ApiCategory {
@@ -28,6 +29,7 @@ async function fetchProducts(): Promise<Product[]> {
     description: "", // backend has no description field
     category: typeof p.categoryId === "object" && p.categoryId !== null && "name" in p.categoryId ? p.categoryId.name : "",
     unitPrice: Number(p.price ?? 0),
+    lowStockThreshold: typeof p.lowStockThreshold === "number" ? p.lowStockThreshold : undefined,
   }));
 }
 
@@ -72,6 +74,7 @@ async function createProduct(data: {
   categoryId: string;
   location: string;
   price: number;
+  lowStockThreshold?: number;
 }): Promise<void> {
   await api.post("/products", data);
 }
@@ -86,21 +89,9 @@ async function updateProduct(productId: string, data: {
   location?: string;
   price?: number;
   description?: string;
+  lowStockThreshold?: number;
 }): Promise<void> {
-  const token = localStorage.getItem("token");
-  const res = await fetch(`${apiBase}/products/${productId}`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-    body: JSON.stringify(data),
-  });
-
-  if (!res.ok) {
-    const errorData = await res.json().catch(() => ({}));
-    throw new Error((errorData as any)?.error || `Failed to update (${res.status})`);
-  }
+  await api.put(`/products/${productId}`, data);
 }
 
 export default function ProductsPage() {
@@ -174,6 +165,7 @@ export default function ProductsPage() {
       location?: string;
       price?: number;
       description?: string;
+      lowStockThreshold?: number;
     }) => {
       try {
         await updateProduct(productId, data);

@@ -29,6 +29,7 @@ export default function CreateProductModal({ categories, locations, onCreateProd
         location: "",
         unitPrice: "",
         description: "",
+        lowStockThreshold: "",
     });
 
     const handleOpen = () => setOpen(true);
@@ -59,15 +60,19 @@ export default function CreateProductModal({ categories, locations, onCreateProd
                 return;
             }
 
+            const thresholdNum = Number(formData.lowStockThreshold);
+
             await onCreateProduct({
                 name: formData.name.trim(),
                 categoryId: formData.categoryId,
                 location: formData.location, // Must be Boston | Seattle | Oakland
                 price: priceNum,
+                lowStockThreshold:
+                  Number.isFinite(thresholdNum) && thresholdNum > 0 ? thresholdNum : -1,
             });
 
             // Reset and close
-            setFormData({ name: "", categoryId: "", location: "", unitPrice: "", description: "" });
+            setFormData({ name: "", categoryId: "", location: "", unitPrice: "", description: "", lowStockThreshold: "" });
             setOpen(false);
             onCreated?.();
         } catch (e: unknown) {
@@ -161,6 +166,17 @@ export default function CreateProductModal({ categories, locations, onCreateProd
                         type="number"
                         value={formData.unitPrice}
                         onChange={e => handleChange("unitPrice", e.target.value)}
+                    />
+
+                    <TextField
+                        fullWidth
+                        label="Low Stock Threshold (optional)"
+                        variant="outlined"
+                        margin="normal"
+                        type="number"
+                        helperText="If blank or non-positive, alerts are disabled for this product."
+                        value={formData.lowStockThreshold}
+                        onChange={e => handleChange("lowStockThreshold", e.target.value)}
                     />
 
                     <TextField

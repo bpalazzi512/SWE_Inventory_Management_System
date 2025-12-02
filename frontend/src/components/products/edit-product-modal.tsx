@@ -15,6 +15,7 @@ interface EditProductModalProps {
     categoryId?: string;
     price?: number;
     description?: string;
+    lowStockThreshold?: number;
   }) => Promise<void>;
 }
 
@@ -28,6 +29,7 @@ export default function EditProductModal({ product, categories, locations, onUpd
     categoryId: "", // still let user choose a new category if desired
     unitPrice: product.unitPrice?.toString() ?? "",
     description: product.description || "",
+    lowStockThreshold: "",
   });
 
   const handleOpen = () => setOpen(true);
@@ -52,6 +54,7 @@ export default function EditProductModal({ product, categories, locations, onUpd
       categoryId?: string;
       price?: number;
       description?: string;
+      lowStockThreshold?: number;
     } = {};
 
     if (formData.name.trim() !== "" && formData.name.trim() !== product.name) {
@@ -75,6 +78,15 @@ export default function EditProductModal({ product, categories, locations, onUpd
 
     if (formData.description.trim() !== "" && formData.description.trim() !== (product.description || "")) {
       payload.description = formData.description.trim();
+    }
+
+    if (formData.lowStockThreshold.trim() !== "") {
+      const tNum = Number(formData.lowStockThreshold);
+      if (!Number.isFinite(tNum)) {
+        setError("Low stock threshold must be a number");
+        return;
+      }
+      payload.lowStockThreshold = tNum > 0 ? tNum : -1;
     }
 
     if (Object.keys(payload).length === 0) {
@@ -159,6 +171,17 @@ export default function EditProductModal({ product, categories, locations, onUpd
             type="number"
             value={formData.unitPrice}
             onChange={(e) => handleChange("unitPrice", e.target.value)}
+          />
+
+          <TextField
+            fullWidth
+            label="Low Stock Threshold (optional)"
+            variant="outlined"
+            margin="normal"
+            type="number"
+            helperText="If blank or non-positive, alerts are disabled for this product."
+            value={formData.lowStockThreshold}
+            onChange={(e) => handleChange("lowStockThreshold", e.target.value)}
           />
 
           <TextField

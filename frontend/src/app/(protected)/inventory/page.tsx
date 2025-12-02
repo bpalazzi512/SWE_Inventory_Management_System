@@ -13,7 +13,10 @@ async function fetchInventory(): Promise<Inventory[]> {
     category: i.category ?? "",
     quantity: Number(i.quantity ?? 0),
     unitPrice: Number(i.unitPrice ?? 0),
-    lowStockThreshold: 0,
+    lowStockThreshold:
+      typeof (i as any).lowStockThreshold === "number"
+        ? (i as any).lowStockThreshold
+        : -1,
     description: i.description ?? "",
   })) as Inventory[];
 }

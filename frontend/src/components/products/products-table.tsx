@@ -159,6 +159,15 @@ export function ProductsTable({ products, categories, locations, onCreateProduct
                                     <ArrowUpDown size={14} />
                                 </div>
                             </TableHead>
+                            <TableHead
+                                className="cursor-pointer text-center"
+                                onClick={() => toggleSort("lowStockThreshold")}
+                            >
+                                <div className="flex items-center justify-center gap-1">
+                                    Low Stock Threshold
+                                    <ArrowUpDown size={14} />
+                                </div>
+                            </TableHead>
                             <TableHead className="text-right pr-6">
                                 Actions
                             </TableHead>
@@ -265,7 +274,16 @@ export function ProductsTable({ products, categories, locations, onCreateProduct
                                             </span>
                                         </div>
                                     </TableCell>
-                                                                        <TableCell className="text-right pr-6 space-x-2">
+                                    <TableCell 
+                                        className="text-center relative group"
+                                    >
+                                        <span className="text-sm text-gray-700">
+                                            {t.lowStockThreshold && t.lowStockThreshold > 0
+                                              ? t.lowStockThreshold
+                                              : "—"}
+                                        </span>
+                                    </TableCell>
+                                    <TableCell className="text-right pr-6 space-x-2">
                                                                                 <EditProductModal
                                                                                     product={t}
                                                                                     categories={categories}
@@ -273,7 +291,7 @@ export function ProductsTable({ products, categories, locations, onCreateProduct
                                                                                     onUpdateProduct={onUpdateProduct}
                                                                                 />
                                                                                 <Button variant="destructive" onClick={() => handleDelete(t)}>Delete</Button>
-                                                                        </TableCell>
+                                    </TableCell>
                                 </TableRow>
                             );
                         })}
