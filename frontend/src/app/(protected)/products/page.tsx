@@ -89,7 +89,6 @@ async function updateProduct(productId: string, data: {
   location?: string;
   price?: number;
   description?: string;
-  lowStockThreshold?: number;
 }): Promise<void> {
   await api.put(`/products/${productId}`, data);
 }
