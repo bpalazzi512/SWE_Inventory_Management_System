@@ -15,6 +15,7 @@ interface CreateProductModalProps {
     categoryId: string;
     location: string;
     price: number;
+    lowStockThreshold?: number;
   }) => Promise<void>;
   onCreated?: () => void;
 }

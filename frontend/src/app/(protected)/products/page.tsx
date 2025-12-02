@@ -132,6 +132,7 @@ export default function ProductsPage() {
       categoryId: string;
       location: string;
       price: number;
+      lowStockThreshold?: number;
     }) => {
       try {
         await createProduct(data);

@@ -29,7 +29,7 @@ export default function EditProductModal({ product, categories, locations, onUpd
     categoryId: "", // still let user choose a new category if desired
     unitPrice: product.unitPrice?.toString() ?? "",
     description: product.description || "",
-    lowStockThreshold: "",
+    lowStockThreshold: product.lowStockThreshold ?? "",
   });
 
   const handleOpen = () => setOpen(true);
@@ -80,7 +80,7 @@ export default function EditProductModal({ product, categories, locations, onUpd
       payload.description = formData.description.trim();
     }
 
-    if (formData.lowStockThreshold.trim() !== "") {
+    if (formData.lowStockThreshold.toString().trim() !== "") {
       const tNum = Number(formData.lowStockThreshold);
       if (!Number.isFinite(tNum)) {
         setError("Low stock threshold must be a number");
