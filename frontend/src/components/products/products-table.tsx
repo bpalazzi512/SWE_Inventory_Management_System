@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { ArrowUpDown, Copy, Check } from "lucide-react";
 import CreateProductModal, { CategoryOption } from "@/components/products/create-product-modal";
+import EditProductModal from "@/components/products/edit-product-modal";
 import { Button } from "@/components/ui/button";
 import { copyToClipboard } from "@/lib/utils";
 
@@ -19,11 +20,18 @@ interface ProductTableProps {
       location: string;
       price: number;
     }) => Promise<void>;
+        onUpdateProduct?: (productId: string, data: {
+            name?: string;
+            categoryId?: string;
+            location?: string;
+            price?: number;
+            description?: string;
+        }) => Promise<void>;
     onDeleteProduct?: (productId: string) => Promise<void>;
     onProductCreated?: () => void;
 }
 
-export function ProductsTable({ products, categories, locations, onCreateProduct, onDeleteProduct, onProductCreated }: ProductTableProps) {
+export function ProductsTable({ products, categories, locations, onCreateProduct, onUpdateProduct, onDeleteProduct, onProductCreated }: ProductTableProps) {
 
     const [searchTerm, setSearchTerm] = useState("");
     const [sortKey, setSortKey] = useState<keyof Product>("name");
@@ -257,9 +265,15 @@ export function ProductsTable({ products, categories, locations, onCreateProduct
                                             </span>
                                         </div>
                                     </TableCell>
-                                    <TableCell className="text-right pr-6">
-                                        <Button variant="destructive" onClick={() => handleDelete(t)}>Delete</Button>
-                                    </TableCell>
+                                                                        <TableCell className="text-right pr-6 space-x-2">
+                                                                                <EditProductModal
+                                                                                    product={t}
+                                                                                    categories={categories}
+                                                                                    locations={locations}
+                                                                                    onUpdateProduct={onUpdateProduct}
+                                                                                />
+                                                                                <Button variant="destructive" onClick={() => handleDelete(t)}>Delete</Button>
+                                                                        </TableCell>
                                 </TableRow>
                             );
                         })}

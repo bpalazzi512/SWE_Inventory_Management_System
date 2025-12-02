@@ -80,6 +80,29 @@ async function deleteProduct(productId: string): Promise<void> {
   await api.delete(`/products/${productId}`);
 }
 
+async function updateProduct(productId: string, data: {
+  name?: string;
+  categoryId?: string;
+  location?: string;
+  price?: number;
+  description?: string;
+}): Promise<void> {
+  const token = localStorage.getItem("token");
+  const res = await fetch(`${apiBase}/products/${productId}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error((errorData as any)?.error || `Failed to update (${res.status})`);
+  }
+}
+
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<CategoryOption[]>([]);
@@ -144,6 +167,24 @@ export default function ProductsPage() {
     [loadProducts]
   );
 
+  const handleUpdateProduct = useCallback(
+    async (productId: string, data: {
+      name?: string;
+      categoryId?: string;
+      location?: string;
+      price?: number;
+      description?: string;
+    }) => {
+      try {
+        await updateProduct(productId, data);
+        await loadProducts();
+      } catch (e: unknown) {
+        throw e;
+      }
+    },
+    [loadProducts]
+  );
+
   if (loading && products.length === 0) {
     return (
       <div className="min-h-screen w-full bg-gray-50 p-8 flex flex-col items-center justify-center">
@@ -166,6 +207,7 @@ export default function ProductsPage() {
           categories={categories}
           locations={locations}
           onCreateProduct={handleCreateProduct}
+          onUpdateProduct={handleUpdateProduct}
           onDeleteProduct={handleDeleteProduct}
           onProductCreated={handleProductCreated}
         />
