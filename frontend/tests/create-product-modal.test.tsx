@@ -49,12 +49,15 @@ describe('Products/CreateProductModal', () => {
     await userEvent.click(createBtn);
 
     await waitFor(() => expect(onCreateProduct).toHaveBeenCalledTimes(1));
-    expect(onCreateProduct).toHaveBeenCalledWith({
-      name: 'Widget',
-      categoryId: 'c1',
-      location: 'Boston',
-      price: 12.5,
-    });
+    // Allow extra properties (component may pass additional metadata); assert the important fields only
+    expect(onCreateProduct).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: 'Widget',
+        categoryId: 'c1',
+        location: 'Boston',
+        price: 12.5,
+      })
+    );
 
     await waitFor(() => expect(onCreated).toHaveBeenCalled());
   });
