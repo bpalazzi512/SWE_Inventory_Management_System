@@ -82,7 +82,8 @@ export default function DashboardPage() {
     <div className="w-full h-full flex flex-col p-8">
       <h1 className="text-3xl font-semibold mb-6">Dashboard</h1>
 
-      <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-2 auto-rows-[1fr]">
+      {/* Grid: Product Info + Low Stock Alerts */}
+      <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-2 auto-rows-[1fr] mb-6">
         {/* Product Info */}
         <Card className="flex flex-col justify-start">
           <CardHeader>
@@ -134,62 +135,61 @@ export default function DashboardPage() {
             </ul>
           </CardContent>
         </Card>
-
-        {/* Recent Transactions */}
-        <Card className="flex flex-col justify-start">
-          <CardHeader>
-            <CardTitle>Recent Transactions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-2 text-sm">
-              {recentTxItems.map((t, idx) => (
-                <li
-                  key={`${t.date}-${t.sku}-${idx}`}
-                  className="flex justify-between border-b pb-1 last:border-none"
-                >
-                  <span>{t.date}</span>
-                  <span>{t.sku}</span>
-                  <span>{t.quantity}</span>
-                  <span
-                    className={`${
-                      t.type === "IN" ? "text-green-600" : "text-red-600"
-                    } font-medium`}
-                  >
-                    {t.type}
-                  </span>
-                </li>
-              ))}
-              {recentTxItems.length === 0 && (
-                <li className="text-muted-foreground">
-                  No recent transactions.
-                </li>
-              )}
-            </ul>
-          </CardContent>
-        </Card>
-
-        {/* Quick Actions */}
-        <Card className="flex flex-col justify-start">
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-3 text-sm text-left">
-              {quickActions.map((action) => (
-                <li key={action.name}>
-                  <Link
-                    href={action.href}
-                    className="text-primary hover:underline"
-                  >
-                    {action.name}
-                  </Link>
-                </li>
-              ))}
-              <SiteSurveyModal />
-            </ul>
-          </CardContent>
-        </Card>
       </div>
+
+      {/* Quick Actions: Full Width, Row Layout */}
+      <Card className="flex flex-col justify-start w-full mb-6">
+        <CardHeader>
+          <CardTitle>Quick Actions</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-row gap-4 items-center">
+            {quickActions.map((action) => (
+              <Link
+                key={action.name}
+                href={action.href}
+                className="text-primary hover:underline text-sm cursor-pointer"
+              >
+                {action.name}
+              </Link>
+            ))}
+            <SiteSurveyModal />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Recent Transactions: Full Width */}
+      <Card className="flex flex-col justify-start w-full">
+        <CardHeader>
+          <CardTitle>Recent Transactions</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ul className="space-y-2 text-sm">
+            {recentTxItems.map((t, idx) => (
+              <li
+                key={`${t.date}-${t.sku}-${idx}`}
+                className="flex justify-between border-b pb-1 last:border-none"
+              >
+                <span>{t.date}</span>
+                <span>{t.sku}</span>
+                <span>{t.quantity}</span>
+                <span
+                  className={`${
+                    t.type === "IN" ? "text-green-600" : "text-red-600"
+                  } font-medium`}
+                >
+                  {t.type}
+                </span>
+              </li>
+            ))}
+            {recentTxItems.length === 0 && (
+              <li className="text-muted-foreground">
+                No recent transactions.
+              </li>
+            )}
+          </ul>
+        </CardContent>
+      </Card>
     </div>
   );
 }
