@@ -7,6 +7,7 @@ import SiteSurveyModal from "@/components/dashboard/site-survey-modal";
 import { Inventory, Transaction } from "@/types";
 import { api } from "@/lib/api";
 import { useState, useEffect } from "react";
+import { LowStockAlertsCard } from "@/components/dashboard/low-stock-alerts";
 
 type RecentTxItem = { date: string; sku: string; type: "IN" | "OUT"; quantity: number };
 
@@ -47,9 +48,12 @@ export default function DashboardPage() {
     (sum: number, i: Inventory) => sum + Number(i.quantity ?? 0),
     0
   );
-  const LOW_STOCK_THRESHOLD = 5; // simple rule since backend doesn't store threshold per product
   const lowStockItems = inventory
-    .filter((i: Inventory) => Number(i.quantity ?? 0) <= LOW_STOCK_THRESHOLD)
+    .filter((i: Inventory) => {
+      const threshold = typeof i.lowStockThreshold === "number" ? i.lowStockThreshold : -1;
+      const qty = Number(i.quantity ?? 0);
+      return threshold > 0 && qty <= threshold;
+    })
     .sort(
       (a: Inventory, b: Inventory) =>
         Number(a.quantity ?? 0) - Number(b.quantity ?? 0)
@@ -118,7 +122,7 @@ export default function DashboardPage() {
                   <span>{item.name}</span>
                   <span>{item.sku}</span>
                   <span className="text-muted-foreground">
-                    Qty: {item.quantity}
+                    Qty: {item.quantity} / Threshold: {item.lowStockThreshold}
                   </span>
                 </li>
               ))}

@@ -14,6 +14,7 @@ router.get('/', authenticateToken, async (_req, res) => {
       category: p.categoryId?.name || '',
       quantity: p.quantity ?? 0,
       unitPrice: p.price,
+      lowStockThreshold: typeof p.lowStockThreshold === 'number' ? p.lowStockThreshold : -1,
       description: '',
     }));
     res.json(items);

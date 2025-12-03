@@ -69,7 +69,6 @@ export async function apiRequest<T = unknown>(
   // Build URL
   const url = route.startsWith("http") ? route : `${API_BASE}${route}`;
 
-  console.log(API_KEY, API_KEY_HEADER);
 
   // Make request
   const response = await fetch(url, {

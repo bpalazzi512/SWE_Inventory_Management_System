@@ -1,7 +1,7 @@
 export type Inventory = {
     name: string;
     sku: string;
-    lowStockThreshold: number;
+  lowStockThreshold: number;
     category?: string;
     quantity: number;
     unitPrice?: number;
@@ -15,6 +15,7 @@ export type Product = {
   description: string;
   category: string;
   unitPrice: number;
+  lowStockThreshold?: number;
 }
 
 export type Transaction = {

@@ -5,7 +5,7 @@ export class ProductController {
   // Create a new product
   async createProduct(req: Request, res: Response): Promise<void> {
     try {
-      const { name, categoryId, location, price } = req.body;
+      const { name, categoryId, location, price, lowStockThreshold } = req.body;
 
       // Validate required fields
       if (!name || !categoryId || !location || price === undefined) {
@@ -32,6 +32,7 @@ export class ProductController {
         categoryId,
         location: location as Location,
         price: priceNum,
+        lowStockThreshold,
       };
 
       const product = await productService.createProduct(productData);
@@ -110,6 +111,16 @@ export class ProductController {
           return;
         }
         updateData.price = priceNum;
+      }
+
+      if (req.body.lowStockThreshold !== undefined) {
+        const tNum = Number(req.body.lowStockThreshold);
+        // -1 means "disabled"; any positive number is accepted as a threshold.
+        if (!Number.isFinite(tNum)) {
+          res.status(400).json({ error: 'lowStockThreshold must be a number' });
+          return;
+        }
+        updateData.lowStockThreshold = tNum > 0 ? tNum : -1;
       }
 
       if (Object.keys(updateData).length === 0) {

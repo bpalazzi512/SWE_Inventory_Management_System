@@ -7,6 +7,7 @@ export interface IProduct extends Document {
   categoryId: mongoose.Types.ObjectId;
   price: number;
   quantity: number;
+  lowStockThreshold: number;
 }
 
 const ProductSchema = new Schema<IProduct>(
@@ -37,6 +38,11 @@ const ProductSchema = new Schema<IProduct>(
       required: true,
       min: 0,
       default: 0,
+    },
+    lowStockThreshold: {
+      type: Number,
+      required: true,
+      default: -1,
     },
   },
   {

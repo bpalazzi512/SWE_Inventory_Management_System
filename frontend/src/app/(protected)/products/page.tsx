@@ -12,6 +12,7 @@ interface ApiProduct {
   categoryId?: { _id: string; name: string } | string;
   price: number;
   quantity: number;
+  lowStockThreshold?: number;
 }
 
 interface ApiCategory {
@@ -28,6 +29,7 @@ async function fetchProducts(): Promise<Product[]> {
     description: "", // backend has no description field
     category: typeof p.categoryId === "object" && p.categoryId !== null && "name" in p.categoryId ? p.categoryId.name : "",
     unitPrice: Number(p.price ?? 0),
+    lowStockThreshold: typeof p.lowStockThreshold === "number" ? p.lowStockThreshold : undefined,
   }));
 }
 
@@ -72,12 +74,23 @@ async function createProduct(data: {
   categoryId: string;
   location: string;
   price: number;
+  lowStockThreshold?: number;
 }): Promise<void> {
   await api.post("/products", data);
 }
 
 async function deleteProduct(productId: string): Promise<void> {
   await api.delete(`/products/${productId}`);
+}
+
+async function updateProduct(productId: string, data: {
+  name?: string;
+  categoryId?: string;
+  location?: string;
+  price?: number;
+  description?: string;
+}): Promise<void> {
+  await api.put(`/products/${productId}`, data);
 }
 
 export default function ProductsPage() {
@@ -119,6 +132,7 @@ export default function ProductsPage() {
       categoryId: string;
       location: string;
       price: number;
+      lowStockThreshold?: number;
     }) => {
       try {
         await createProduct(data);
@@ -139,6 +153,25 @@ export default function ProductsPage() {
         await loadProducts();
       } catch (e: unknown) {
         throw e; // Re-throw to let the component handle the error
+      }
+    },
+    [loadProducts]
+  );
+
+  const handleUpdateProduct = useCallback(
+    async (productId: string, data: {
+      name?: string;
+      categoryId?: string;
+      location?: string;
+      price?: number;
+      description?: string;
+      lowStockThreshold?: number;
+    }) => {
+      try {
+        await updateProduct(productId, data);
+        await loadProducts();
+      } catch (e: unknown) {
+        throw e;
       }
     },
     [loadProducts]
@@ -166,6 +199,7 @@ export default function ProductsPage() {
           categories={categories}
           locations={locations}
           onCreateProduct={handleCreateProduct}
+          onUpdateProduct={handleUpdateProduct}
           onDeleteProduct={handleDeleteProduct}
           onProductCreated={handleProductCreated}
         />

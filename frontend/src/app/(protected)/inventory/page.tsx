@@ -7,13 +7,16 @@ import { api } from "@/lib/api";
 async function fetchInventory(): Promise<Inventory[]> {
   const data = await api.get<Inventory[]>("/inventory");
   // Ensure shape matches Inventory type with sensible defaults
-  return (data as Inventory[]).map((i) => ({
+  return (data as Inventory[]).map((i : Inventory) => ({
     name: i.name,
     sku: i.sku,
     category: i.category ?? "",
     quantity: Number(i.quantity ?? 0),
     unitPrice: Number(i.unitPrice ?? 0),
-    lowStockThreshold: 0,
+    lowStockThreshold:
+      typeof i.lowStockThreshold === "number"
+        ? i.lowStockThreshold
+        : -1,
     description: i.description ?? "",
   })) as Inventory[];
 }
