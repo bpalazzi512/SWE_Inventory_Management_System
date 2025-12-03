@@ -35,7 +35,7 @@ export default function SiteSurveyModal() {
       {/* Trigger button */}
       <button
         onClick={handleOpen}
-        className="text-primary hover:underline text-sm text-left cursor-pointer"
+        className="text-primary hover:underline text-sm cursor-pointer"
       >
         Site Survey
       </button>
